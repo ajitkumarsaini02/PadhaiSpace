@@ -287,8 +287,18 @@ exports.getMyPurchases = async (req, res) => {
 exports.checkSubjectAccess = async (req, res) => {
   try {
     const { subjectId } = req.params;
-    const userId = req.user._id;
+    
+    // TEMPORARILY COMMENTED OUT - ALL SUBJECTS UNLOCKED FOR FREE
+    return res.json({
+      success: true,
+      unlocked: true,
+      isPaid: false,
+      price: 0,
+      message: 'All files free for now',
+    });
 
+    /*
+    const userId = req.user._id;
     const subject = await Subject.findById(subjectId);
     if (!subject) {
       return res.status(404).json({ success: false, message: 'Subject not found' });
@@ -317,6 +327,7 @@ exports.checkSubjectAccess = async (req, res) => {
       isPaid: true,
       price: subject.price || 9,
     });
+    */
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

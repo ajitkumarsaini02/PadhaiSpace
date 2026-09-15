@@ -376,8 +376,8 @@ exports.viewProtectedPDF = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Resource not found' });
     }
 
-    // ENTITLEMENT CHECK FOR PAID SUBJECTS
-    // 1. Admin users bypass purchase check (Admin Override)
+    // ENTITLEMENT CHECK FOR PAID SUBJECTS (TEMPORARILY COMMENTED OUT FOR FREE ACCESS)
+    /*
     const isAdmin = req.user && req.user.role === 'admin';
     if (!isAdmin && resource.subjectId) {
       const subject = await Subject.findById(resource.subjectId);
@@ -399,6 +399,7 @@ exports.viewProtectedPDF = async (req, res) => {
         }
       }
     }
+    */
 
     // Increment views only on initial request (no Range or Range starting at bytes=0-)
     const rangeHeader = req.headers.range;

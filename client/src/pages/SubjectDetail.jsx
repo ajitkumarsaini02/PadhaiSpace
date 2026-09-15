@@ -31,8 +31,8 @@ export default function SubjectDetail() {
   const [loading, setLoading] = useState(true);
   const [activePDF, setActivePDF] = useState(null);
 
-  // Payment State
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  // Payment State (All Subjects Free for Now)
+  const [isUnlocked, setIsUnlocked] = useState(true);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState('');
 
