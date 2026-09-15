@@ -325,16 +325,16 @@ export default function AdminResources() {
       )}
 
       {/* ADMIN RESOURCE UPLOAD / EDIT FORM */}
-      <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-sm font-extrabold text-slate-900 flex items-center">
-            {editingId ? <Edit3 className="w-4 h-4 mr-2 text-brand-600" /> : <Upload className="w-4 h-4 mr-2 text-amber-600" />}
+      <div className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] rounded-3xl p-6 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle space-y-5">
+        <div className="flex items-center justify-between border-b border-[#DCE2EC] dark:border-[#252D42] pb-3">
+          <h3 className="text-sm font-extrabold text-[#172033] dark:text-[#F8FAFC] flex items-center">
+            {editingId ? <Edit3 className="w-4 h-4 mr-2 text-[#4F8FEF]" /> : <Upload className="w-4 h-4 mr-2 text-[#F2A93B]" />}
             {editingId ? 'Edit Resource & Replace PDF' : 'Upload New Resource'}
           </h3>
           {editingId && (
             <button
               onClick={resetForm}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg"
+              className="text-xs font-bold text-[#64748B] dark:text-[#9AA6BC] hover:text-[#172033] dark:hover:text-white bg-[#F5F7FB] dark:bg-[#161D31] px-2.5 py-1 rounded-lg border border-[#DCE2EC] dark:border-[#252D42]"
             >
               Cancel Edit
             </button>
@@ -344,51 +344,51 @@ export default function AdminResources() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Resource Title *</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Resource Title *</label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. Data Structure Unit 1 Complete Lecture Notes"
                 required
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Resource Type *</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Resource Type *</label>
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none font-semibold text-slate-800"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none font-semibold"
               >
-                <option value="notes">Semester Notes</option>
-                <option value="pdf">Unit PDF</option>
-                <option value="pyq">PYQ (Past Exam Paper)</option>
-                <option value="syllabus">Syllabus</option>
-                <option value="exam-resource">Exam Resource</option>
-                <option value="other">Other Academic File</option>
+                <option value="notes" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Semester Notes</option>
+                <option value="pdf" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Unit PDF</option>
+                <option value="pyq" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">PYQ (Past Exam Paper)</option>
+                <option value="syllabus" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Syllabus</option>
+                <option value="exam-resource" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Exam Resource</option>
+                <option value="other" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Other Academic File</option>
               </select>
             </div>
           </div>
 
           {/* DEPENDENT DROPDOWNS: Branch -> Semester -> Subject -> Unit */}
-          <div className="p-4 bg-slate-50/70 rounded-2xl border border-slate-200/60 space-y-3">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <div className="p-4 bg-[#F5F7FB] dark:bg-[#161D31]/70 rounded-2xl border border-[#DCE2EC] dark:border-[#252D42] space-y-3">
+            <p className="text-[11px] font-bold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">
               Academic Mapping (Dependent Dropdowns)
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               {/* Step 1: Branch */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">1. Branch</label>
+                <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">1. Branch</label>
                 <select
                   value={form.branchId}
                   onChange={(e) => setForm({ ...form, branchId: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl font-medium"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
                 >
-                  <option value="">🌐 Common (All Branches)</option>
+                  <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">🌐 Common (All Branches)</option>
                   {branches.map((b) => (
-                    <option key={b._id} value={b._id}>
+                    <option key={b._id} value={b._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                       {b.name} ({b.code.toUpperCase()})
                     </option>
                   ))}
@@ -397,15 +397,15 @@ export default function AdminResources() {
 
               {/* Step 2: Semester */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">2. Semester</label>
+                <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">2. Semester</label>
                 <select
                   value={form.semesterNumber}
                   onChange={(e) => setForm({ ...form, semesterNumber: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl font-medium"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
                 >
-                  <option value="">All Semesters (1 - 8)</option>
+                  <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Semesters (1 - 8)</option>
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                    <option key={s} value={s}>
+                    <option key={s} value={s} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                       Semester {s}
                     </option>
                   ))}
@@ -414,16 +414,16 @@ export default function AdminResources() {
 
               {/* Step 3: Subject (Filtered based on Branch & Semester) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">3. Subject *</label>
+                <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">3. Subject *</label>
                 <select
                   value={form.subjectId}
                   onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
                   required
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl font-bold text-slate-900"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-bold"
                 >
-                  <option value="">Select Subject ({filteredSubjects.length} Available)</option>
+                  <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Select Subject ({filteredSubjects.length} Available)</option>
                   {filteredSubjects.map((s) => (
-                    <option key={s._id} value={s._id}>
+                    <option key={s._id} value={s._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                       {s.name} {s.code ? `(${s.code})` : ''}
                     </option>
                   ))}
@@ -432,14 +432,14 @@ export default function AdminResources() {
 
               {/* Step 4: Unit (Filtered based on selected Subject) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">4. Syllabus Unit</label>
+                <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">4. Syllabus Unit</label>
                 <select
                   value={form.unitId}
                   onChange={(e) => setForm({ ...form, unitId: e.target.value })}
                   disabled={!form.subjectId || units.length === 0}
-                  className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl font-medium disabled:opacity-50"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium disabled:opacity-50"
                 >
-                  <option value="">
+                  <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                     {!form.subjectId
                       ? 'Select Subject first'
                       : units.length === 0
@@ -447,7 +447,7 @@ export default function AdminResources() {
                       : 'Entire Subject / All Units'}
                   </option>
                   {units.map((u) => (
-                    <option key={u._id} value={u._id}>
+                    <option key={u._id} value={u._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                       Unit {u.unitNumber}: {u.title}
                     </option>
                   ))}
@@ -459,80 +459,80 @@ export default function AdminResources() {
           {/* PDF FILE UPLOAD WITH VALIDATION */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">
                 {editingId ? 'Replace PDF File (.pdf max 25MB)' : 'Select PDF File (.pdf max 25MB) *'}
               </label>
               <input
                 type="file"
                 accept="application/pdf,.pdf"
                 onChange={handleFileChange}
-                className="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+                className="w-full px-3 py-1.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#EFF5FF] dark:file:bg-[#111729] file:text-[#4F8FEF]"
               />
-              {fileError && <p className="text-[11px] font-bold text-rose-600 mt-1">{fileError}</p>}
+              {fileError && <p className="text-[11px] font-bold text-[#E05252] mt-1">{fileError}</p>}
               {file && (
-                <p className="text-[11px] font-bold text-emerald-600 mt-1">
+                <p className="text-[11px] font-bold text-[#36B37E] mt-1">
                   ✓ Selected: {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">External PDF Link (Fallback)</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">External PDF Link (Fallback)</label>
               <input
                 type="url"
                 value={form.externalUrl}
                 onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
                 placeholder="https://example.com/lecture-notes.pdf"
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
               />
             </div>
           </div>
 
           {/* PYQ Fields if PYQ selected */}
           {form.type === 'pyq' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-amber-50/60 rounded-xl border border-amber-200/80">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-amber-50/60 dark:bg-[#161D31] rounded-xl border border-amber-200/80 dark:border-[#252D42]">
               <div>
-                <label className="block text-xs font-bold text-amber-900 mb-1">Exam Year</label>
+                <label className="block text-xs font-bold text-[#F2A93B] mb-1">Exam Year</label>
                 <input
                   type="number"
                   value={form.examYear}
                   onChange={(e) => setForm({ ...form, examYear: e.target.value })}
                   placeholder="e.g. 2024"
-                  className="w-full px-3 py-2 text-xs bg-white border border-amber-300 rounded-xl"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-amber-900 mb-1">Exam Type</label>
+                <label className="block text-xs font-bold text-[#F2A93B] mb-1">Exam Type</label>
                 <select
                   value={form.examType}
                   onChange={(e) => setForm({ ...form, examType: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white border border-amber-300 rounded-xl font-medium"
+                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
                 >
-                  <option value="">Select Exam Type</option>
-                  <option value="Mid Semester">Mid Semester</option>
-                  <option value="End Semester">End Semester</option>
-                  <option value="University Exam">University Exam</option>
+                  <option value="" className="bg-white dark:bg-[#111729]">Select Exam Type</option>
+                  <option value="Mid Semester" className="bg-white dark:bg-[#111729]">Mid Semester</option>
+                  <option value="End Semester" className="bg-white dark:bg-[#111729]">End Semester</option>
+                  <option value="University Exam" className="bg-white dark:bg-[#111729]">University Exam</option>
                 </select>
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Description & Tags</label>
+            <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Description & Tags</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
                 type="text"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Brief summary of resource content..."
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
               />
               <input
                 type="text"
                 value={form.tags}
                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 placeholder="Comma separated tags e.g. Data Structures, Notes, AKTU"
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
               />
             </div>
           </div>
@@ -563,26 +563,26 @@ export default function AdminResources() {
       </div>
 
       {/* RESOURCE LISTING TABLE WITH SEARCH & FILTERS */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden space-y-4 p-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-slate-100 pb-4">
+      <div className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] rounded-3xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle overflow-hidden space-y-4 p-6">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-[#DCE2EC] dark:border-[#252D42] pb-4">
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 flex items-center">
-              <FileText className="w-4 h-4 mr-2 text-brand-600" /> Uploaded Academic Resources ({displayedResources.length})
+            <h3 className="text-sm font-extrabold text-[#172033] dark:text-[#F8FAFC] flex items-center">
+              <FileText className="w-4 h-4 mr-2 text-[#4F8FEF]" /> Uploaded Academic Resources ({displayedResources.length})
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Filter resources by branch, semester, subject, type, or search term</p>
+            <p className="text-xs text-[#64748B] dark:text-[#9AA6BC] mt-0.5">Filter resources by branch, semester, subject, type, or search term</p>
           </div>
 
           {/* Filters Bar */}
           <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Search */}
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-[#64748B] dark:text-[#9AA6BC] absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={listFilters.q}
                 onChange={(e) => setListFilters({ ...listFilters, q: e.target.value })}
                 placeholder="Search..."
-                className="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none"
+                className="pl-8 pr-3 py-1.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
               />
             </div>
 
@@ -590,12 +590,12 @@ export default function AdminResources() {
             <select
               value={listFilters.branchId}
               onChange={(e) => setListFilters({ ...listFilters, branchId: e.target.value })}
-              className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-slate-200 dark:border-[#252D42] rounded-xl font-medium"
             >
-              <option value="">All Branches</option>
-              <option value="common">🌐 Common Resources Only</option>
+              <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Branches</option>
+              <option value="common" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">🌐 Common Resources Only</option>
               {branches.map((b) => (
-                <option key={b._id} value={b._id}>
+                <option key={b._id} value={b._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                   {b.name}
                 </option>
               ))}
@@ -605,11 +605,11 @@ export default function AdminResources() {
             <select
               value={listFilters.semesterNumber}
               onChange={(e) => setListFilters({ ...listFilters, semesterNumber: e.target.value })}
-              className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-slate-200 dark:border-[#252D42] rounded-xl font-medium"
             >
-              <option value="">All Semesters</option>
+              <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Semesters</option>
               {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                <option key={s} value={s}>
+                <option key={s} value={s} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                   Sem {s}
                 </option>
               ))}
@@ -619,14 +619,14 @@ export default function AdminResources() {
             <select
               value={listFilters.type}
               onChange={(e) => setListFilters({ ...listFilters, type: e.target.value })}
-              className="px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl font-medium"
+              className="px-2.5 py-1.5 text-xs bg-white dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-slate-200 dark:border-[#252D42] rounded-xl font-medium"
             >
-              <option value="">All Types</option>
-              <option value="notes">Notes</option>
-              <option value="pdf">PDF</option>
-              <option value="pyq">PYQ</option>
-              <option value="syllabus">Syllabus</option>
-              <option value="exam-resource">Exam Resource</option>
+              <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Types</option>
+              <option value="notes" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Notes</option>
+              <option value="pdf" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">PDF</option>
+              <option value="pyq" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">PYQ</option>
+              <option value="syllabus" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Syllabus</option>
+              <option value="exam-resource" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Exam Resource</option>
             </select>
           </div>
         </div>
