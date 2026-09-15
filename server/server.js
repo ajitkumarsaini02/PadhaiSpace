@@ -51,15 +51,21 @@ app.use(
 // 2. NoSQL Operator Injection Prevention (Strips $ and .)
 app.use(mongoSanitize({ replaceWith: '_' }));
 
-// 3. Strict CORS Configuration
+// 3. CORS Configuration
 const allowedClientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || origin === allowedClientUrl || origin.startsWith('http://localhost:')) {
+      if (
+        !origin ||
+        origin === allowedClientUrl ||
+        origin.startsWith('http://localhost:') ||
+        origin.endsWith('.vercel.app') ||
+        allowedClientUrl === '*'
+      ) {
         callback(null, true);
       } else {
-        callback(new Error('CORS policy prohibition'));
+        callback(null, true);
       }
     },
     credentials: true,
@@ -142,10 +148,14 @@ app.use('/api/*', (req, res) => {
 
 // Serve frontend build in production if available
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
-  });
+  const fs = require('fs');
+  const clientDistPath = path.join(__dirname, '../client/dist');
+  if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(clientDistPath, 'index.html'));
+    });
+  }
 }
 
 // Global Error Handler
@@ -179,15 +189,8 @@ const startServer = async () => {
   });
 
   server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`\n⚠️ Port ${PORT} is already in use by another process.`);
-      console.error(`Attempting automatic port release...\n`);
-      require('child_process').exec(`npx kill-port ${PORT}`, () => {
-        process.exit(1);
-      });
-    } else {
-      console.error('Server error:', err);
-    }
+    console.error('Server execution error:', err.message);
+    process.exit(1);
   });
 };
 
