@@ -145,7 +145,7 @@ export default function PDFReader() {
               </span>
             )}
           </div>
-          <h1 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">
+          <h1 className="text-lg sm:text-2xl font-extrabold text-[#172033] dark:text-[#F8FAFC] leading-tight">
             {resource.title}
           </h1>
         </div>

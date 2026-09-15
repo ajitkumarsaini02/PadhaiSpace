@@ -130,14 +130,14 @@ export default function AdminActivityLog() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold mb-2">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#EFF5FF] dark:bg-[#161D31] border border-[#4F8FEF]/30 text-[#4F8FEF] text-xs font-bold mb-2">
             <Activity className="w-4 h-4" />
             <span>Resource Activity Audit Logs</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] dark:text-[#F8FAFC]">
             PDF & Resource Activity Monitoring
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[#64748B] dark:text-[#9AA6BC] mt-1">
             Real-time audit logging for PDF viewing sessions, tab visibility changes, fullscreen state, and print attempts
           </p>
         </div>
@@ -145,13 +145,13 @@ export default function AdminActivityLog() {
         <div className="flex items-center space-x-3">
           <button
             onClick={fetchData}
-            className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl flex items-center transition-colors"
+            className="px-3.5 py-2 bg-[#F5F7FB] dark:bg-[#161D31] hover:bg-[#E2E8F0] dark:hover:bg-[#1C253E] text-[#172033] dark:text-[#F8FAFC] text-xs font-bold rounded-xl flex items-center transition-colors border border-[#DCE2EC] dark:border-[#252D42]"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Logs
           </button>
           <Link
             to="/admin"
-            className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-2 rounded-xl border border-amber-200"
+            className="text-xs font-bold text-[#F2A93B] bg-[#161D31] hover:bg-[#1C253E] px-3.5 py-2 rounded-xl border border-[#252D42] transition-colors"
           >
             ← Back to Admin
           </Link>
@@ -159,15 +159,15 @@ export default function AdminActivityLog() {
       </div>
 
       {/* Technically Accurate Browser Notice Banner */}
-      <div className="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl text-xs text-amber-900 flex items-start space-x-3">
-        <Info className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+      <div className="p-4 bg-amber-500/10 dark:bg-[#161D31] border border-[#F2A93B]/30 dark:border-[#252D42] rounded-2xl text-xs text-[#F2A93B] flex items-start space-x-3">
+        <Info className="w-5 h-5 text-[#F2A93B] flex-shrink-0 mt-0.5" />
         <div className="space-y-1">
           <p className="font-bold">Technical Browser Audit Disclaimer:</p>
-          <p className="text-[11px] text-amber-800 leading-relaxed">
+          <p className="text-[11px] text-[#64748B] dark:text-[#9AA6BC] leading-relaxed">
             Standard web browsers cannot detect external OS-level screenshot tools (Snipping Tool, Win+Shift+S, OBS, or camera capture). 
-            <strong> TAB_HIDDEN</strong> indicates document visibility state changed (e.g. user minimized browser or switched tabs). 
-            <strong> PRINT_ATTEMPT</strong> logs print keyboard shortcuts and print dialog requests. 
-            <strong> SCREEN_CAPTURE_SIGNAL</strong> logs in-app display media screen sharing stream events.
+            <strong className="text-[#172033] dark:text-[#F8FAFC]"> TAB_HIDDEN</strong> indicates document visibility state changed (e.g. user minimized browser or switched tabs). 
+            <strong className="text-[#172033] dark:text-[#F8FAFC]"> PRINT_ATTEMPT</strong> logs print keyboard shortcuts and print dialog requests. 
+            <strong className="text-[#172033] dark:text-[#F8FAFC]"> SCREEN_CAPTURE_SIGNAL</strong> logs in-app display media screen sharing stream events.
           </p>
         </div>
       </div>
@@ -175,9 +175,9 @@ export default function AdminActivityLog() {
       {/* Audit Stats Overview Cards */}
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-1">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Events</p>
-            <p className="text-xl font-extrabold text-slate-900">{stats.totalEvents}</p>
+          <div className="bg-white dark:bg-[#111729] p-4 rounded-2xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle space-y-1">
+            <p className="text-[10px] font-bold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">Total Events</p>
+            <p className="text-xl font-extrabold text-[#172033] dark:text-[#F8FAFC]">{stats.totalEvents}</p>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs space-y-1">

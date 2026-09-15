@@ -14,10 +14,10 @@ export default function Bookmarks() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center">
-          <Bookmark className="w-7 h-7 text-amber-500 fill-amber-500 mr-2.5" /> Saved Bookmarks
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#172033] dark:text-[#F8FAFC] tracking-tight flex items-center">
+          <Bookmark className="w-7 h-7 text-[#F2A93B] fill-[#F2A93B] mr-2.5" /> Saved Bookmarks
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+        <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#9AA6BC] mt-1">
           Quick access to your saved semester notes, PYQs, and exam resources
         </p>
       </div>

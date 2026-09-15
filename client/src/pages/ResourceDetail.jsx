@@ -106,7 +106,7 @@ export default function ResourceDetail() {
               )}
             </div>
 
-            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 leading-snug">
+            <h1 className="text-xl sm:text-3xl font-extrabold text-[#172033] dark:text-[#F8FAFC] leading-snug">
               {resource.title}
             </h1>
 
