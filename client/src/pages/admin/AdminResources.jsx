@@ -70,32 +70,32 @@ export default function AdminResources() {
 
   // DEPENDENT DROPDOWN LOGIC: Update available Subjects when Form Branch or Semester changes
   useEffect(() => {
-    let filtered = [...allSubjects];
+    const loadSubjects = async () => {
+      try {
+        const params = {};
+        if (form.branchId) params.branchId = form.branchId;
+        if (form.semesterNumber) params.semesterNumber = form.semesterNumber;
 
-    if (form.branchId) {
-      filtered = filtered.filter((s) => {
-        const matchesDirectBranch = s.branchId?._id === form.branchId || s.branchId === form.branchId;
-        const matchesOfferingBranch = s.branches?.some((b) => (b._id || b) === form.branchId);
-        return matchesDirectBranch || matchesOfferingBranch;
-      });
-    }
+        const res = await subjectService.getAll(params);
+        if (res.success) {
+          setFilteredSubjects(res.data);
+          if (allSubjects.length === 0 && !form.branchId && !form.semesterNumber) {
+            setAllSubjects(res.data);
+          }
+        }
+      } catch (err) {
+        console.error('Fetch dependent subjects error:', err);
+      }
+    };
 
-    if (form.semesterNumber) {
-      const targetSem = Number(form.semesterNumber);
-      filtered = filtered.filter((s) => {
-        const matchesDirectSem = Number(s.semesterNumber) === targetSem || Number(s.semesterId?.number) === targetSem;
-        const matchesOfferingSem = s.semesterNumbers?.includes(targetSem);
-        return matchesDirectSem || matchesOfferingSem;
-      });
-    }
+    loadSubjects();
+  }, [form.branchId, form.semesterNumber]);
 
-    setFilteredSubjects(filtered);
-
-    // Reset subjectId if selected subject is no longer in filtered list
-    if (form.subjectId && !filtered.some((s) => s._id === form.subjectId)) {
+  useEffect(() => {
+    if (form.subjectId && filteredSubjects.length > 0 && !filteredSubjects.some((s) => s._id === form.subjectId)) {
       setForm((prev) => ({ ...prev, subjectId: '', unitId: '' }));
     }
-  }, [form.branchId, form.semesterNumber, allSubjects]);
+  }, [filteredSubjects, form.subjectId]);
 
   // DEPENDENT DROPDOWN LOGIC: Fetch Units when Form Subject changes
   useEffect(() => {
@@ -302,23 +302,23 @@ export default function AdminResources() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Admin Resource Upload & Management</h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <h1 className="text-2xl font-extrabold text-[#172033] dark:text-[#F8FAFC]">Admin Resource Upload & Management</h1>
+          <p className="text-xs text-[#64748B] dark:text-[#9AA6BC] mt-1">
             Upload PDF notes, PYQs, syllabi & exam resources using dependent dropdowns and file validation
           </p>
         </div>
-        <Link to="/admin" className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+        <Link to="/admin" className="text-xs font-bold text-[#F2A93B] bg-[#161D31] hover:bg-[#1C253E] px-3.5 py-2 rounded-xl border border-[#252D42] transition-colors">
           ← Back to Admin
         </Link>
       </div>
 
       {msg.text && (
-        <div className={`p-4 rounded-2xl text-xs font-semibold flex items-center justify-between ${msg.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}`}>
+        <div className={`p-4 rounded-2xl text-xs font-semibold flex items-center justify-between ${msg.type === 'success' ? 'bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30' : 'bg-[#E05252]/10 text-[#E05252] border border-[#E05252]/30'}`}>
           <div className="flex items-center space-x-2">
-            {msg.type === 'success' ? <Check className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-rose-600" />}
+            {msg.type === 'success' ? <Check className="w-4 h-4 text-[#36B37E]" /> : <AlertCircle className="w-4 h-4 text-[#E05252]" />}
             <span>{msg.text}</span>
           </div>
-          <button onClick={() => setMsg({ type: '', text: '' })} className="p-1 hover:bg-black/5 rounded">
+          <button onClick={() => setMsg({ type: '', text: '' })} className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -351,7 +351,7 @@ export default function AdminResources() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. Data Structure Unit 1 Complete Lecture Notes"
                 required
-                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
+                className="w-full px-3.5 py-2.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-semibold"
               />
             </div>
 
@@ -360,7 +360,7 @@ export default function AdminResources() {
               <select
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none font-semibold"
+                className="w-full px-3.5 py-2.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none font-semibold"
               >
                 <option value="notes" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Semester Notes</option>
                 <option value="pdf" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Unit PDF</option>
@@ -373,8 +373,8 @@ export default function AdminResources() {
           </div>
 
           {/* DEPENDENT DROPDOWNS: Branch -> Semester -> Subject -> Unit */}
-          <div className="p-4 bg-[#F5F7FB] dark:bg-[#161D31]/70 rounded-2xl border border-[#DCE2EC] dark:border-[#252D42] space-y-3">
-            <p className="text-[11px] font-bold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">
+          <div className="p-4 bg-[#F5F7FB] dark:bg-[#161D31]/80 rounded-2xl border border-[#DCE2EC] dark:border-[#252D42] space-y-3">
+            <p className="text-[11px] font-extrabold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">
               Academic Mapping (Dependent Dropdowns)
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -384,7 +384,7 @@ export default function AdminResources() {
                 <select
                   value={form.branchId}
                   onChange={(e) => setForm({ ...form, branchId: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-semibold"
                 >
                   <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">🌐 Common (All Branches)</option>
                   {branches.map((b) => (
@@ -401,7 +401,7 @@ export default function AdminResources() {
                 <select
                   value={form.semesterNumber}
                   onChange={(e) => setForm({ ...form, semesterNumber: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-semibold"
                 >
                   <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Semesters (1 - 8)</option>
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
@@ -419,7 +419,7 @@ export default function AdminResources() {
                   value={form.subjectId}
                   onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
                   required
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-bold"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-bold"
                 >
                   <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Select Subject ({filteredSubjects.length} Available)</option>
                   {filteredSubjects.map((s) => (
@@ -437,7 +437,7 @@ export default function AdminResources() {
                   value={form.unitId}
                   onChange={(e) => setForm({ ...form, unitId: e.target.value })}
                   disabled={!form.subjectId || units.length === 0}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium disabled:opacity-50"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-semibold disabled:opacity-50"
                 >
                   <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                     {!form.subjectId
@@ -466,7 +466,7 @@ export default function AdminResources() {
                 type="file"
                 accept="application/pdf,.pdf"
                 onChange={handleFileChange}
-                className="w-full px-3 py-1.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#EFF5FF] dark:file:bg-[#111729] file:text-[#4F8FEF]"
+                className="w-full px-3.5 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#EFF5FF] dark:file:bg-[#111729] file:text-[#4F8FEF] cursor-pointer"
               />
               {fileError && <p className="text-[11px] font-bold text-[#E05252] mt-1">{fileError}</p>}
               {file && (
@@ -483,14 +483,14 @@ export default function AdminResources() {
                 value={form.externalUrl}
                 onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
                 placeholder="https://example.com/lecture-notes.pdf"
-                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
+                className="w-full px-3.5 py-2.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-semibold"
               />
             </div>
           </div>
 
           {/* PYQ Fields if PYQ selected */}
           {form.type === 'pyq' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-amber-50/60 dark:bg-[#161D31] rounded-xl border border-amber-200/80 dark:border-[#252D42]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3.5 bg-amber-500/10 dark:bg-[#161D31] rounded-2xl border border-[#F2A93B]/30 dark:border-[#252D42]">
               <div>
                 <label className="block text-xs font-bold text-[#F2A93B] mb-1">Exam Year</label>
                 <input
@@ -498,7 +498,7 @@ export default function AdminResources() {
                   value={form.examYear}
                   onChange={(e) => setForm({ ...form, examYear: e.target.value })}
                   placeholder="e.g. 2024"
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-semibold"
                 />
               </div>
               <div>
@@ -506,7 +506,7 @@ export default function AdminResources() {
                 <select
                   value={form.examType}
                   onChange={(e) => setForm({ ...form, examType: e.target.value })}
-                  className="w-full px-3 py-2 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-semibold"
                 >
                   <option value="" className="bg-white dark:bg-[#111729]">Select Exam Type</option>
                   <option value="Mid Semester" className="bg-white dark:bg-[#111729]">Mid Semester</option>
@@ -525,14 +525,14 @@ export default function AdminResources() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Brief summary of resource content..."
-                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
+                className="w-full px-3.5 py-2.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-semibold"
               />
               <input
                 type="text"
                 value={form.tags}
                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 placeholder="Comma separated tags e.g. Data Structures, Notes, AKTU"
-                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-medium"
+                className="w-full px-3.5 py-2.5 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none focus:border-[#4F8FEF] font-semibold"
               />
             </div>
           </div>
@@ -541,7 +541,7 @@ export default function AdminResources() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 bg-[#F2A93B] hover:bg-[#d9942b] text-white font-extrabold text-xs rounded-xl shadow-md transition-colors disabled:opacity-50 cursor-pointer"
             >
               {submitting
                 ? 'Processing...'
@@ -553,7 +553,7 @@ export default function AdminResources() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
+                className="px-4 py-2.5 bg-slate-100 dark:bg-[#161D31] text-slate-700 dark:text-[#F8FAFC] font-bold text-xs rounded-xl hover:bg-slate-200 dark:hover:bg-[#1C253E] border border-transparent dark:border-[#252D42] transition-colors"
               >
                 Cancel
               </button>
