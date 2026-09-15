@@ -11,6 +11,11 @@ if (!process.env.MONGODB_URI) {
 const connectDB = async () => {
   const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/padhaiSpace';
 
+  if (process.env.NODE_ENV === 'production' && (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('127.0.0.1'))) {
+    console.error('❌ CRITICAL ERROR: process.env.MONGODB_URI is not set in Render Environment Variables!');
+    console.error('👉 Please go to Render Dashboard -> Environment Variables -> Add MONGODB_URI (your MongoDB Atlas connection string).');
+  }
+
   try {
     const conn = await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 5000,
