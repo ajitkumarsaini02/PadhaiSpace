@@ -91,122 +91,122 @@ export default function AdminSubjects() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">Manage B.Tech Subjects</h1>
-          <p className="text-xs text-slate-500 mt-1">Configure B.Tech subjects, course codes, credits & types (Theory, Lab, Elective, Other)</p>
+          <h1 className="text-2xl font-extrabold text-[#172033] dark:text-[#F8FAFC]">Manage B.Tech Subjects</h1>
+          <p className="text-xs text-[#64748B] dark:text-[#9AA6BC] mt-1">Configure B.Tech subjects, course codes, credits & types (Theory, Lab, Elective, Other)</p>
         </div>
-        <Link to="/admin" className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+        <Link to="/admin" className="text-xs font-bold text-[#F2A93B] bg-[#161D31] px-3.5 py-2 rounded-lg border border-[#252D42]">
           ← Back to Admin
         </Link>
       </div>
 
       {msg.text && (
-        <div className={`p-3 rounded-xl text-xs font-semibold flex items-center ${msg.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
+        <div className={`p-3 rounded-xl text-xs font-semibold flex items-center ${msg.type === 'success' ? 'bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30' : 'bg-[#E05252]/10 text-[#E05252] border border-[#E05252]/30'}`}>
           {msg.type === 'success' ? <Check className="w-4 h-4 mr-2" /> : <AlertCircle className="w-4 h-4 mr-2" />}
           {msg.text}
         </div>
       )}
 
       {/* Add Form */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
-        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center">
-          <Plus className="w-4 h-4 mr-1 text-amber-600" /> Create New CSE Subject
+      <div className="bg-white dark:bg-[#111729] rounded-2xl p-6 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle space-y-4">
+        <h3 className="text-sm font-bold text-[#172033] dark:text-[#F8FAFC] flex items-center">
+          <Plus className="w-4 h-4 mr-1.5 text-[#F2A93B]" /> Create New Subject
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Subject Name</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Subject Name</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 placeholder="e.g. Operating System"
                 required
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Subject Code (Verified or blank)</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Subject Code (Verified or blank)</label>
               <input
                 type="text"
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
                 placeholder="e.g. BCS401"
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl focus:outline-none font-medium"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Branch</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Branch</label>
               <select
                 value={form.branchId}
                 onChange={(e) => setForm({ ...form, branchId: e.target.value })}
                 required
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
               >
                 {branches.map((b) => (
-                  <option key={b._id} value={b._id}>{b.name}</option>
+                  <option key={b._id} value={b._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">{b.name}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Semester</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Semester</label>
               <select
                 value={form.semesterNumber}
                 onChange={(e) => setForm({ ...form, semesterNumber: Number(e.target.value) })}
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
               >
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                  <option key={s} value={s}>Semester {s}</option>
+                  <option key={s} value={s} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Semester {s}</option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Subject Type</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Subject Type</label>
               <select
                 value={form.subjectType}
                 onChange={(e) => setForm({ ...form, subjectType: e.target.value })}
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-semibold"
               >
-                <option value="theory">Theory Subject</option>
-                <option value="lab">Lab / Practical</option>
-                <option value="elective">Elective Subject</option>
-                <option value="other">Common / Other</option>
+                <option value="theory" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Theory Subject</option>
+                <option value="lab" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Lab / Practical</option>
+                <option value="elective" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Elective Subject</option>
+                <option value="other" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Common / Other</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Credits</label>
+              <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Credits</label>
               <input
                 type="number"
                 min="0"
                 max="10"
                 value={form.credits}
                 onChange={(e) => setForm({ ...form, credits: e.target.value })}
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+                className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+            <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Description</label>
             <input
               type="text"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Short summary of subject syllabus"
-              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl"
+              className="w-full px-3 py-2 text-xs bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] placeholder-[#64748B] dark:placeholder-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42] rounded-xl font-medium"
             />
           </div>
 
           <button
             type="submit"
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
+            className="px-5 py-2.5 bg-[#4F8FEF] hover:bg-[#3D7FE5] text-white font-bold text-xs rounded-xl shadow-subtle transition-colors cursor-pointer"
           >
             Save Subject
           </button>
@@ -214,19 +214,19 @@ export default function AdminSubjects() {
       </div>
 
       {/* Existing Subjects Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-700 flex items-center justify-between">
+      <div className="bg-white dark:bg-[#111729] rounded-2xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle overflow-hidden">
+        <div className="p-4 bg-[#F5F7FB] dark:bg-[#161D31] border-b border-[#DCE2EC] dark:border-[#252D42] font-bold text-xs text-[#172033] dark:text-[#F8FAFC] flex items-center justify-between">
           <span>All B.Tech Subjects ({subjects.length})</span>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#DCE2EC] dark:divide-[#252D42]">
           {subjects.map((s) => (
-            <div key={s._id} className="p-4 flex items-center justify-between hover:bg-slate-50/50 text-xs">
+            <div key={s._id} className="p-4 flex items-center justify-between hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] text-xs transition-colors">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-bold text-slate-900 text-sm">{s.name}</span>
+                  <span className="font-bold text-[#172033] dark:text-[#F8FAFC] text-sm">{s.name}</span>
                   {s.code && (
-                    <span className="px-2 py-0.5 rounded bg-slate-900 text-white font-bold text-[10px] uppercase">
+                    <span className="px-2 py-0.5 rounded bg-[#0B1020] text-white font-bold text-[10px] uppercase border border-[#252D42]">
                       {s.code}
                     </span>
                   )}
@@ -235,24 +235,24 @@ export default function AdminSubjects() {
                       ? Array.from(new Set(s.offerings.map(o => o.branchId?.code || o.branchId?.name).filter(Boolean)))
                       : [s.branchId?.code || s.branchId?.name || 'CSE'];
                     return (
-                      <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200">
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-[#F2A93B] font-bold border border-[#F2A93B]/30">
                         {branchList.join(', ')}
                       </span>
                     );
                   })()}
-                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold">
+                  <span className="px-2 py-0.5 rounded bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] font-semibold border border-[#DCE2EC] dark:border-[#252D42]">
                     Sem {s.semesterNumber || 1}
                   </span>
-                  <span className="px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold uppercase text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-[#EFF5FF] dark:bg-[#161D31] text-[#4F8FEF] font-bold uppercase text-[10px] border border-[#DCE2EC] dark:border-[#252D42]">
                     {s.subjectType || s.type || 'theory'} ({s.credits || 3} Cr)
                   </span>
                 </div>
-                <p className="text-slate-500 mt-1">{s.description}</p>
+                {s.description && <p className="text-[#64748B] dark:text-[#9AA6BC] mt-1">{s.description}</p>}
               </div>
 
               <button
                 onClick={() => handleDelete(s._id)}
-                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                className="p-2 text-[#64748B] dark:text-[#9AA6BC] hover:text-[#E05252] hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                 title="Delete Subject"
               >
                 <Trash2 className="w-4 h-4" />

@@ -34,9 +34,9 @@ export default function FilterBar({
             onChange={(e) => onChange('branchId', e.target.value)}
             className="px-3 py-2 text-xs font-medium bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none text-[#172033] dark:text-[#F8FAFC]"
           >
-            <option value="">All Branches</option>
+            <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Branches</option>
             {branches.map((b) => (
-              <option key={b._id} value={b._id}>
+              <option key={b._id} value={b._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                 {b.name}
               </option>
             ))}
@@ -48,9 +48,9 @@ export default function FilterBar({
             onChange={(e) => onChange('semesterNumber', e.target.value)}
             className="px-3 py-2 text-xs font-medium bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none text-[#172033] dark:text-[#F8FAFC]"
           >
-            <option value="">All Semesters (1 - 8)</option>
+            <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Semesters (1 - 8)</option>
             {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-              <option key={s} value={s}>
+              <option key={s} value={s} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                 Semester {s}
               </option>
             ))}
@@ -66,11 +66,11 @@ export default function FilterBar({
               }}
               className="px-3 py-2 text-xs font-medium bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none text-[#172033] dark:text-[#F8FAFC]"
             >
-              <option value="">All Subject Types</option>
-              <option value="theory">Theory Subjects</option>
-              <option value="lab">Lab Courses</option>
-              <option value="elective">Elective Subjects</option>
-              <option value="other">Common & Other Subjects</option>
+              <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Subject Types</option>
+              <option value="theory" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Theory Subjects</option>
+              <option value="lab" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Lab Courses</option>
+              <option value="elective" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Elective Subjects</option>
+              <option value="other" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Common & Other Subjects</option>
             </select>
           )}
 
@@ -81,9 +81,9 @@ export default function FilterBar({
               onChange={(e) => onChange('subjectId', e.target.value)}
               className="px-3 py-2 text-xs font-medium bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none text-[#172033] dark:text-[#F8FAFC] max-w-[180px] truncate"
             >
-              <option value="">All Subjects</option>
+              <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Subjects</option>
               {subjects.map((s) => (
-                <option key={s._id} value={s._id}>
+                <option key={s._id} value={s._id} className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">
                   {s.name}
                 </option>
               ))}
@@ -97,12 +97,12 @@ export default function FilterBar({
               onChange={(e) => onChange('type', e.target.value)}
               className="px-3 py-2 text-xs font-medium bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none text-[#172033] dark:text-[#F8FAFC]"
             >
-              <option value="">All Resource Types</option>
-              <option value="notes">Semester Notes</option>
-              <option value="pdf">Unit PDFs</option>
-              <option value="pyq">PYQs (Past Papers)</option>
-              <option value="syllabus">Syllabus</option>
-              <option value="exam-resource">Exam Resources</option>
+              <option value="" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">All Resource Types</option>
+              <option value="notes" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Semester Notes</option>
+              <option value="pdf" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Unit PDFs</option>
+              <option value="pyq" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">PYQs (Past Papers)</option>
+              <option value="syllabus" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Syllabus</option>
+              <option value="exam-resource" className="bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC]">Exam Resources</option>
             </select>
           )}
 
