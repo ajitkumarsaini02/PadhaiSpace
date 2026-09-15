@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-});
+const rawBaseURL = import.meta.env.VITE_API_BASE_URL;
+let baseURL = '/api';
+
+if (rawBaseURL && rawBaseURL.trim()) {
+  const trimmed = rawBaseURL.trim().replace(/\/+$/, '');
+  baseURL = trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+}
+
+const API = axios.create({ baseURL });
 
 // Request interceptor to add JWT token from localStorage
 API.interceptors.request.use(
