@@ -637,46 +637,46 @@ export default function AdminResources() {
             No academic resources found matching your selected filters.
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[#DCE2EC] dark:divide-[#252D42]">
             {displayedResources.map((r) => (
-              <div key={r._id} className="py-3 flex items-center justify-between hover:bg-slate-50/50 text-xs transition-colors rounded-xl px-2">
-                <div className="space-y-1 min-w-0 pr-4">
+              <div key={r._id} className="py-3.5 flex items-center justify-between hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] text-xs transition-colors rounded-xl px-3">
+                <div className="space-y-1.5 min-w-0 pr-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-extrabold text-slate-900 text-sm">{r.title}</span>
-                    <span className="px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-bold uppercase text-[10px]">
+                    <span className="font-extrabold text-[#172033] dark:text-[#F8FAFC] text-sm">{r.title}</span>
+                    <span className="px-2.5 py-0.5 rounded bg-[#EFF5FF] dark:bg-[#161D31] text-[#4F8FEF] font-bold uppercase text-[10px] border border-[#DCE2EC] dark:border-[#252D42]">
                       {r.type}
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold text-[10px]">
+                    <span className="px-2.5 py-0.5 rounded bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] font-semibold border border-[#DCE2EC] dark:border-[#252D42] text-[10px]">
                       {r.subjectId?.name || 'Subject'}
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 font-bold border border-amber-200 text-[10px]">
+                    <span className="px-2.5 py-0.5 rounded bg-amber-500/10 text-[#F2A93B] font-bold border border-[#F2A93B]/30 text-[10px]">
                       {r.branchId ? r.branchId.name : '🌐 Common Resource'}
                     </span>
                     {r.semesterId?.number && (
-                      <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium text-[10px]">
+                      <span className="px-2.5 py-0.5 rounded bg-white dark:bg-[#111729] text-[#64748B] dark:text-[#9AA6BC] font-medium border border-[#DCE2EC] dark:border-[#252D42] text-[10px]">
                         Sem {r.semesterId.number}
                       </span>
                     )}
                     {r.unitId?.unitNumber && (
-                      <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold text-[10px]">
+                      <span className="px-2.5 py-0.5 rounded bg-[#4F8FEF]/10 text-[#4F8FEF] font-bold border border-[#4F8FEF]/30 text-[10px]">
                         Unit {r.unitId.unitNumber}
                       </span>
                     )}
                   </div>
-                  {r.description && <p className="text-slate-500 text-xs truncate max-w-2xl">{r.description}</p>}
+                  {r.description && <p className="text-[#64748B] dark:text-[#9AA6BC] text-xs truncate max-w-2xl">{r.description}</p>}
                 </div>
 
                 <div className="flex items-center space-x-2 flex-shrink-0">
                   <button
                     onClick={() => startEdit(r)}
-                    className="p-1.5 text-slate-600 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                    className="p-2 text-[#64748B] dark:text-[#9AA6BC] hover:text-[#4F8FEF] hover:bg-[#EFF5FF] dark:hover:bg-[#161D31] rounded-lg transition-colors cursor-pointer"
                     title="Edit & Replace PDF"
                   >
                     <Edit3 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(r._id)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                    className="p-2 text-[#64748B] dark:text-[#9AA6BC] hover:text-[#E05252] hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                     title="Delete Resource"
                   >
                     <Trash2 className="w-4 h-4" />
