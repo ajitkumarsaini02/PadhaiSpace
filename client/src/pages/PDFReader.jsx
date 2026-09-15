@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ProtectedPDFViewer from '../components/ProtectedPDFViewer';
-import { resourceService } from '../services/api';
+import { resourceService, getApiBaseUrl } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, BookOpen, Layers, ShieldCheck, AlertCircle } from 'lucide-react';
 import { CardSkeleton } from '../components/SkeletonLoader';
@@ -42,7 +42,8 @@ export default function PDFReader() {
           return;
         }
 
-        const pdfResponse = await fetch(`/api/resources/${id}/view`, {
+        const apiBase = getApiBaseUrl();
+        const pdfResponse = await fetch(`${apiBase}/resources/${id}/view`, {
           headers: {
             Authorization: `Bearer ${jwtToken}`,
           },

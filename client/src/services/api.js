@@ -10,6 +10,8 @@ if (rawBaseURL && rawBaseURL.trim()) {
 
 const API = axios.create({ baseURL });
 
+export const getApiBaseUrl = () => baseURL;
+
 // Request interceptor to add JWT token from localStorage
 API.interceptors.request.use(
   (config) => {
