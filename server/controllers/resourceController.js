@@ -364,6 +364,86 @@ exports.incrementViews = async (req, res) => {
   }
 };
 
+// Helper to fetch remote PDF over HTTP/HTTPS with redirect support
+const fetchRemotePDFBuffer = async (url) => {
+  let targetUrl = url;
+  if (targetUrl.includes('drive.google.com') && targetUrl.includes('/file/d/')) {
+    const fileIdMatch = targetUrl.match(/\/file\/d\/([^\/]+)/);
+    if (fileIdMatch && fileIdMatch[1]) {
+      targetUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+    }
+  }
+
+  const response = await fetch(targetUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    },
+    redirect: 'follow',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch external PDF (HTTP ${response.status})`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  if (buffer.length < 100) {
+    throw new Error('Fetched external file is too small or invalid PDF');
+  }
+  return buffer;
+};
+
+// Helper to construct a 100% standard valid PDF 1.4 binary Buffer dynamically
+const createValidPDFBuffer = (titleStr = 'PadhaiSpace Protected Academic Document') => {
+  const cleanTitle = (titleStr || 'PadhaiSpace Academic Document').replace(/[()\\]/g, '');
+  const contentStream = `BT
+/F1 18 Tf
+50 720 Td
+(${cleanTitle}) Tj
+0 -30 Td
+/F1 12 Tf
+(PadhaiSpace Protected Academic Study Notes) Tj
+0 -20 Td
+(Document is active and available in read-only protected mode.) Tj
+ET`;
+
+  const streamLength = Buffer.byteLength(contentStream);
+
+  const header = '%PDF-1.4\n';
+  const obj1 = '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n';
+  const obj2 = '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n';
+  const obj3 = '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n';
+  const obj4 = '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n';
+  const obj5Header = `5 0 obj\n<< /Length ${streamLength} >>\nstream\n`;
+  const obj5Footer = '\nendstream\nendobj\n';
+
+  const p1 = Buffer.byteLength(header);
+  const p2 = p1 + Buffer.byteLength(obj1);
+  const p3 = p2 + Buffer.byteLength(obj2);
+  const p4 = p3 + Buffer.byteLength(obj3);
+  const p5 = p4 + Buffer.byteLength(obj4);
+  const xrefStart = p5 + Buffer.byteLength(obj5Header) + streamLength + Buffer.byteLength(obj5Footer);
+
+  const pad = (num) => String(num).padStart(10, '0');
+
+  const xref = `xref
+0 6
+0000000000 65535 f 
+${pad(p1)} 00000 n 
+${pad(p2)} 00000 n 
+${pad(p3)} 00000 n 
+${pad(p4)} 00000 n 
+${pad(p5)} 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+${xrefStart}
+%%EOF`;
+
+  const fullPdf = header + obj1 + obj2 + obj3 + obj4 + obj5Header + contentStream + obj5Footer + xref;
+  return Buffer.from(fullPdf, 'utf-8');
+};
+
 // @route GET /api/resources/:id/view (Protected PDF Streaming)
 exports.viewProtectedPDF = async (req, res) => {
   try {
@@ -376,31 +456,6 @@ exports.viewProtectedPDF = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Resource not found' });
     }
 
-    // ENTITLEMENT CHECK FOR PAID SUBJECTS (TEMPORARILY COMMENTED OUT FOR FREE ACCESS)
-    /*
-    const isAdmin = req.user && req.user.role === 'admin';
-    if (!isAdmin && resource.subjectId) {
-      const subject = await Subject.findById(resource.subjectId);
-      if (subject && subject.isPaid !== false) {
-        const access = await SubjectAccess.findOne({
-          userId: req.user._id,
-          subjectId: subject._id,
-          status: 'active',
-        });
-
-        if (!access) {
-          return res.status(403).json({
-            success: false,
-            message: 'Purchase this subject to access the PDF.',
-            isPaidSubject: true,
-            subjectId: subject._id,
-            price: subject.price || 9,
-          });
-        }
-      }
-    }
-    */
-
     // Increment views only on initial request (no Range or Range starting at bytes=0-)
     const rangeHeader = req.headers.range;
     if (!rangeHeader || rangeHeader.startsWith('bytes=0-')) {
@@ -412,9 +467,11 @@ exports.viewProtectedPDF = async (req, res) => {
       fs.mkdirSync(protectedDir, { recursive: true });
     }
 
-    let pdfPath;
+    let pdfBuffer = null;
+    let pdfPath = null;
+
+    // 1. Check local file on disk
     if (resource.fileUrl && !resource.fileUrl.startsWith('http')) {
-      // Path traversal protection: resolve basename strictly
       const safeFilename = path.basename(resource.fileUrl);
       const testPath1 = path.join(protectedDir, safeFilename);
       const uploadsDir = path.join(__dirname, '../uploads');
@@ -427,87 +484,64 @@ exports.viewProtectedPDF = async (req, res) => {
       }
     }
 
-    // Fallback sample PDF if file is not found on disk
-    if (!pdfPath || !fs.existsSync(pdfPath)) {
-      pdfPath = path.join(protectedDir, 'sample_resource.pdf');
-      const validPDFContent = `%PDF-1.4
-1 0 obj
-<</Type /Catalog /Pages 2 0 R>>
-endobj
-2 0 obj
-<</Type /Pages /Kids [3 0 R 5 0 R] /Count 2>>
-endobj
-3 0 obj
-<</Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources <</Font <</F1 <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>>>>>> /Contents 4 0 R>>
-endobj
-4 0 obj
-<</Length 72>>
-stream
-BT
-/F1 20 Tf
-50 720 Td
-(PadhaiSpace Protected Academic Document - Page 1) Tj
-ET
-endstream
-endobj
-5 0 obj
-<</Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources <</Font <</F1 <</Type /Font /Subtype /Type1 /BaseFont /Helvetica>>>>>> /Contents 6 0 R>>
-endobj
-6 0 obj
-<</Length 72>>
-stream
-BT
-/F1 20 Tf
-50 720 Td
-(PadhaiSpace Protected Academic Document - Page 2) Tj
-ET
-endstream
-endobj
-xref
-0 7
-0000000000 65535 f 
-0000000009 00000 n 
-0000000052 00000 n 
-0000000109 00000 n 
-0000000282 00000 n 
-0000000403 00000 n 
-0000000576 00000 n 
-trailer
-<</Size 7 /Root 1 0 R>>
-startxref
-697
-%%EOF`;
-      fs.writeFileSync(pdfPath, Buffer.from(validPDFContent));
+    // 2. Check HTTP/HTTPS URL (fileUrl or externalUrl)
+    const remoteUrl = (resource.fileUrl && resource.fileUrl.startsWith('http'))
+      ? resource.fileUrl
+      : (resource.externalUrl && resource.externalUrl.startsWith('http') ? resource.externalUrl : null);
+
+    if (!pdfPath && remoteUrl) {
+      try {
+        pdfBuffer = await fetchRemotePDFBuffer(remoteUrl);
+      } catch (remoteErr) {
+        console.warn(`[PDF Stream] Remote fetch failed for resource ${resource._id}:`, remoteErr.message);
+      }
     }
 
-    const stat = fs.statSync(pdfPath);
-    const fileSize = stat.size;
+    // 3. Fallback: Local disk file if found
+    if (pdfPath && !pdfBuffer) {
+      const stat = fs.statSync(pdfPath);
+      const fileSize = stat.size;
 
-    // Strict Security & Cache Control Headers
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Accept-Ranges', 'bytes');
+
+      if (rangeHeader) {
+        const parts = rangeHeader.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunksize = end - start + 1;
+
+        res.status(206);
+        res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
+        res.setHeader('Content-Length', chunksize);
+
+        const fileStream = fs.createReadStream(pdfPath, { start, end });
+        return fileStream.pipe(res);
+      } else {
+        res.setHeader('Content-Length', fileSize);
+        const fileStream = fs.createReadStream(pdfPath);
+        return fileStream.pipe(res);
+      }
+    }
+
+    // 4. Fallback: Dynamic valid PDF buffer if file or remote stream not found
+    if (!pdfBuffer) {
+      pdfBuffer = createValidPDFBuffer(resource.title);
+    }
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline');
     res.setHeader('Cache-Control', 'private, no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Content-Length', pdfBuffer.length);
 
-    if (rangeHeader) {
-      const parts = rangeHeader.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-      const chunksize = end - start + 1;
-
-      res.status(206);
-      res.setHeader('Content-Range', `bytes ${start}-${end}/${fileSize}`);
-      res.setHeader('Content-Length', chunksize);
-
-      const fileStream = fs.createReadStream(pdfPath, { start, end });
-      fileStream.pipe(res);
-    } else {
-      res.setHeader('Content-Length', fileSize);
-      const fileStream = fs.createReadStream(pdfPath);
-      fileStream.pipe(res);
-    }
+    return res.end(pdfBuffer);
   } catch (error) {
     console.error('Error streaming PDF:', error);
     res.status(500).json({ success: false, message: error.message || 'Error streaming PDF' });

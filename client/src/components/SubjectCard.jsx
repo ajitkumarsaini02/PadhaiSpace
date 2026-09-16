@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FolderGit2, ArrowRight, Award, Lock, CheckCircle } from 'lucide-react';
+import { FolderGit2, ArrowRight, Award, CheckCircle } from 'lucide-react';
 
 export default function SubjectCard({ subject }) {
   let branchLabels = [];
@@ -61,11 +61,9 @@ export default function SubjectCard({ subject }) {
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase ${getTypeStyle(rawType)}`}>
               {formattedTypeLabel}
             </span>
-            {subject.isPaid !== false && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#F2A93B]/10 text-[#F2A93B] border border-[#F2A93B]/30">
-                ₹{subject.price || 9} Course
-              </span>
-            )}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center">
+              <CheckCircle className="w-3 h-3 mr-1" /> Free Access
+            </span>
           </div>
 
           <div className="flex items-center space-x-1 text-[11px] font-semibold text-[#64748B] dark:text-[#9AA6BC] shrink-0">

@@ -1,27 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import ResourceCard from '../components/ResourceCard';
 import PDFViewerModal from '../components/PDFViewerModal';
 import EmptyState from '../components/EmptyState';
 import { CardSkeleton } from '../components/SkeletonLoader';
-import { subjectService, unitService, resourceService, paymentService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { subjectService, unitService, resourceService } from '../services/api';
 import {
   Layers,
   ArrowLeft,
   Award,
-  Lock,
   CheckCircle,
-  ShieldCheck,
-  CreditCard,
-  Sparkles,
   BookOpen,
 } from 'lucide-react';
 
 export default function SubjectDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
 
   const [subject, setSubject] = useState(null);
   const [units, setUnits] = useState([]);
@@ -30,25 +23,6 @@ export default function SubjectDetail() {
   const [selectedUnit, setSelectedUnit] = useState('');
   const [loading, setLoading] = useState(true);
   const [activePDF, setActivePDF] = useState(null);
-
-  // Payment State (All Subjects Free for Now)
-  const [isUnlocked, setIsUnlocked] = useState(true);
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
-  const [purchaseError, setPurchaseError] = useState('');
-
-  // Dynamically load Razorpay SDK Script
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) {
-        return resolve(true);
-      }
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
 
   useEffect(() => {
     const fetchSubjectData = async () => {
@@ -63,18 +37,6 @@ export default function SubjectDetail() {
         if (subjRes.success) setSubject(subjRes.data);
         if (unitsRes.success) setUnits(unitsRes.data);
         if (resRes.success) setResources(resRes.data);
-
-        // Check Access entitlement if logged in
-        if (isAuthenticated) {
-          try {
-            const accessRes = await paymentService.checkAccess(id);
-            if (accessRes.success) {
-              setIsUnlocked(accessRes.unlocked);
-            }
-          } catch (accessErr) {
-            console.warn('Check access failed:', accessErr.message);
-          }
-        }
       } catch (err) {
         console.error('Fetch subject detail error:', err);
       } finally {
@@ -83,107 +45,7 @@ export default function SubjectDetail() {
     };
 
     if (id) fetchSubjectData();
-  }, [id, isAuthenticated]);
-
-  // Unlock / Purchase Subject Flow
-  const handleUnlockSubject = async () => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: { pathname: `/subjects/${id}` } } });
-      return;
-    }
-
-    try {
-      setPurchaseLoading(true);
-      setPurchaseError('');
-
-      // 1. Create order on backend
-      const orderRes = await paymentService.createOrder(id);
-      if (!orderRes.success) {
-        setPurchaseError(orderRes.message || 'Failed to initialize payment order');
-        setPurchaseLoading(false);
-        return;
-      }
-
-      if (orderRes.alreadyUnlocked) {
-        setIsUnlocked(true);
-        setPurchaseLoading(false);
-        return;
-      }
-
-      const { order, subject: orderSubject } = orderRes;
-
-      // 2. Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      
-      // If Razorpay SDK loaded and valid key present
-      if (scriptLoaded && window.Razorpay && order.keyId && !order.id.startsWith('order_test_')) {
-        const options = {
-          key: order.keyId,
-          amount: order.amount,
-          currency: order.currency || 'INR',
-          name: 'PadhaiSpace',
-          description: `Unlock Complete Subject: ${orderSubject?.name || 'Subject'}`,
-          order_id: order.id,
-          handler: async function (response) {
-            try {
-              const verifyRes = await paymentService.verifyPayment({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                subjectId: id,
-              });
-
-              if (verifyRes.success) {
-                setIsUnlocked(true);
-              } else {
-                setPurchaseError('Payment verification failed: ' + verifyRes.message);
-              }
-            } catch (vErr) {
-              setPurchaseError('Error verifying payment signature');
-            } finally {
-              setPurchaseLoading(false);
-            }
-          },
-          prefill: {
-            name: user?.name || '',
-            email: user?.email || '',
-          },
-          theme: { color: '#0f172a' },
-          modal: {
-            ondismiss: function () {
-              setPurchaseLoading(false);
-            },
-          },
-        };
-
-        const razorpayInstance = new window.Razorpay(options);
-        razorpayInstance.on('payment.failed', function (response) {
-          setPurchaseError('Payment failed: ' + (response.error?.description || 'Transaction declined'));
-          setPurchaseLoading(false);
-        });
-        razorpayInstance.open();
-      } else {
-        // Test mode automatic checkout simulation for test environment
-        const verifyRes = await paymentService.verifyPayment({
-          razorpay_order_id: order.id,
-          razorpay_payment_id: `pay_test_${Date.now()}`,
-          razorpay_signature: 'test_signature_valid',
-          subjectId: id,
-        });
-
-        if (verifyRes.success) {
-          setIsUnlocked(true);
-        } else {
-          setPurchaseError(verifyRes.message || 'Payment failed in test mode');
-        }
-        setPurchaseLoading(false);
-      }
-    } catch (err) {
-      console.error('Purchase error:', err);
-      setPurchaseError(err.message || 'Payment processing failed');
-      setPurchaseLoading(false);
-    }
-  };
+  }, [id]);
 
   if (loading) {
     return (
@@ -225,8 +87,6 @@ export default function SubjectDetail() {
     : [subject.semesterNumber || subject.semesterId?.number].filter(Boolean);
 
   const subjectTypeDisplay = subject.subjectType || subject.type || 'theory';
-  const priceRupees = subject.price || 9;
-  const isPaidSubject = subject.isPaid !== false;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -276,92 +136,21 @@ export default function SubjectDetail() {
               {subject.description || 'Access official B.Tech semester notes, unit PDFs, previous year question papers, syllabi, and revision materials.'}
             </p>
 
-            {/* Access Badge for header */}
-            {isPaidSubject && isUnlocked && (
-              <div className="inline-flex items-center space-x-2 bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30 px-3 py-1.5 rounded-lg text-xs font-bold">
-                <CheckCircle className="w-4 h-4 text-[#36B37E]" />
-                <span>✓ Unlocked — All {units.length || 5} Units Available</span>
-              </div>
-            )}
-          </div>
-
-          {/* Pricing & Unlock Box */}
-          {isPaidSubject && !isUnlocked && (
-            <div className="bg-[#111729] border border-[#252D42] rounded-xl p-5 md:w-80 shadow-subtle space-y-4 flex-shrink-0 text-center md:text-left">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#9AA6BC] uppercase tracking-wider">Complete Subject</span>
-                <span className="bg-[#F2A93B]/10 text-[#F2A93B] text-[10px] font-bold px-2 py-0.5 rounded border border-[#F2A93B]/30">One-Time Access</span>
-              </div>
-
-              <div>
-                <div className="text-3xl font-black text-white flex items-baseline justify-center md:justify-start">
-                  <span>₹{priceRupees}</span>
-                  <span className="text-xs font-medium text-[#9AA6BC] ml-1.5">/ complete subject</span>
-                </div>
-                <p className="text-xs text-[#9AA6BC] mt-1">Unlock all {units.length || 5} units & all PDF study materials</p>
-              </div>
-
-              {purchaseError && (
-                <div className="p-2.5 rounded-lg bg-red-500/10 text-[#E05252] text-xs font-medium border border-red-500/20">
-                  {purchaseError}
-                </div>
-              )}
-
-              <button
-                onClick={handleUnlockSubject}
-                disabled={purchaseLoading}
-                className="w-full py-2.5 px-4 bg-[#F2A93B] hover:bg-[#E39A2E] text-[#0B1020] font-bold text-xs rounded-lg shadow-subtle transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 cursor-pointer"
-              >
-                {purchaseLoading ? (
-                  <span className="inline-block animate-spin">⌛ Loading...</span>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4" />
-                    <span>Unlock for ₹{priceRupees}</span>
-                  </>
-                )}
-              </button>
-
-              <div className="flex items-center justify-center space-x-3 text-[11px] text-[#9AA6BC]">
-                <span className="flex items-center"><ShieldCheck className="w-3.5 h-3.5 mr-1 text-[#36B37E]" /> Razorpay Secured</span>
-                <span>•</span>
-                <span>All Units Included</span>
-              </div>
+            <div className="inline-flex items-center space-x-2 bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30 px-3 py-1.5 rounded-lg text-xs font-bold">
+              <CheckCircle className="w-4 h-4 text-[#36B37E]" />
+              <span>✓ 100% Free Access — All {units.length || 5} Units & Resources Available</span>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* Unlocked Banner / Purchase Banner */}
-      {isPaidSubject && !isUnlocked ? (
-        <div className="bg-[#111729] border border-[#252D42] rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-[#F2A93B]/10 text-[#F2A93B] border border-[#F2A93B]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Lock className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#F8FAFC]">Subject Content Locked</h3>
-              <p className="text-xs text-[#9AA6BC] mt-0.5">
-                Purchase this subject for ₹{priceRupees} to unlock Unit 1 through Unit 5 and read all protected PDFs.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleUnlockSubject}
-            disabled={purchaseLoading}
-            className="px-5 py-2.5 bg-[#F2A93B] hover:bg-[#E39A2E] text-[#0B1020] font-bold text-xs rounded-lg shadow-subtle transition-colors whitespace-nowrap"
-          >
-            Unlock for ₹{priceRupees}
-          </button>
-        </div>
-      ) : (
-        <div className="bg-[#36B37E]/10 border border-[#36B37E]/30 rounded-xl p-4 flex items-center space-x-3 text-[#36B37E]">
-          <CheckCircle className="w-5 h-5 text-[#36B37E] flex-shrink-0" />
-          <p className="text-xs sm:text-sm font-semibold">
-            ✓ Unlocked — Full access to all {units.length || 5} units and PDF study materials.
-          </p>
-        </div>
-      )}
+      {/* Free Access Banner */}
+      <div className="bg-[#36B37E]/10 border border-[#36B37E]/30 rounded-xl p-4 flex items-center space-x-3 text-[#36B37E]">
+        <CheckCircle className="w-5 h-5 text-[#36B37E] flex-shrink-0" />
+        <p className="text-xs sm:text-sm font-semibold">
+          ✓ Free Academic Access — Full access to all {units.length || 5} units and PDF study materials for all students.
+        </p>
+      </div>
 
       {/* Units Section */}
       {units.length > 0 && (
@@ -370,11 +159,9 @@ export default function SubjectDetail() {
             <h3 className="text-sm font-bold text-[#172033] dark:text-[#F8FAFC] flex items-center">
               <Layers className="w-4 h-4 mr-2 text-[#4F8FEF]" /> Syllabus Units ({units.length})
             </h3>
-            {isPaidSubject && (
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${isUnlocked ? 'bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30' : 'bg-[#F2A93B]/10 text-[#F2A93B] border border-[#F2A93B]/30'}`}>
-                {isUnlocked ? '✓ Unlocked' : `₹${priceRupees} Unlocks All ${units.length} Units`}
-              </span>
-            )}
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30 flex items-center">
+              <CheckCircle className="w-3.5 h-3.5 mr-1" /> All {units.length} Units Free
+            </span>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -398,11 +185,7 @@ export default function SubjectDetail() {
                     : 'bg-[#F5F7FB] dark:bg-[#161D31] text-[#64748B] dark:text-[#9AA6BC] hover:text-[#172033] dark:hover:text-white border border-[#DCE2EC] dark:border-[#252D42]'
                 }`}
               >
-                {isPaidSubject && !isUnlocked ? (
-                  <Lock className="w-3 h-3 text-[#F2A93B]" />
-                ) : (
-                  <CheckCircle className="w-3 h-3 text-[#36B37E]" />
-                )}
+                <CheckCircle className="w-3 h-3 text-[#36B37E]" />
                 <span>Unit {u.unitNumber}: {u.title}</span>
               </button>
             ))}
@@ -445,8 +228,6 @@ export default function SubjectDetail() {
             <ResourceCard
               key={res._id}
               resource={res}
-              isUnlocked={!isPaidSubject || isUnlocked}
-              onUnlockRequest={handleUnlockSubject}
               onOpenPDF={(r) => setActivePDF(r)}
             />
           ))}

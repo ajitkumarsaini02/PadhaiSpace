@@ -5,8 +5,6 @@ import {
   GraduationCap,
   BookOpen,
   FileText,
-  HelpCircle,
-  FolderKanban,
   Search,
   User,
   LogOut,
@@ -16,9 +14,6 @@ import {
   X,
   ChevronDown,
   LayoutDashboard,
-  ShoppingBag,
-  CreditCard,
-  Shield,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
@@ -87,7 +82,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-3">
             <button
               onClick={handleSearchClick}
-              className="p-2 text-[#64748B] hover:text-[#4F8FEF] hover:bg-slate-100 dark:hover:bg-[#161D31] rounded-lg transition-colors flex items-center space-x-1.5 text-xs font-medium border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle"
+              className="p-2 text-[#64748B] hover:text-[#4F8FEF] hover:bg-slate-100 dark:hover:bg-[#161D31] rounded-lg transition-colors flex items-center space-x-1.5 text-xs font-medium border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle cursor-pointer"
               title="Search subjects, notes, PYQs"
             >
               <Search className="w-4 h-4 text-[#64748B]" />
@@ -135,15 +130,6 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      to="/my-purchases"
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] hover:text-[#4F8FEF]"
-                    >
-                      <ShoppingBag className="w-4 h-4 mr-2.5 text-[#64748B]" />
-                      My Purchases
-                    </Link>
-
-                    <Link
                       to="/bookmarks"
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] hover:text-[#4F8FEF]"
@@ -175,24 +161,6 @@ export default function Navbar() {
                         >
                           <ShieldAlert className="w-4 h-4 mr-2.5 text-[#F2A93B]" />
                           Admin Dashboard
-                        </Link>
-
-                        <Link
-                          to="/admin/payments"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center px-4 py-1.5 text-[#F2A93B] hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] font-medium"
-                        >
-                          <CreditCard className="w-4 h-4 mr-2.5 text-[#F2A93B]" />
-                          Payment History
-                        </Link>
-
-                        <Link
-                          to="/admin/access"
-                          onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center px-4 py-1.5 text-[#F2A93B] hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] font-medium"
-                        >
-                          <Shield className="w-4 h-4 mr-2.5 text-[#F2A93B]" />
-                          Subject Access
                         </Link>
                       </>
                     )}
@@ -279,13 +247,6 @@ export default function Navbar() {
                   <LayoutDashboard className="w-4 h-4 mr-2" /> Dashboard
                 </Link>
                 <Link
-                  to="/my-purchases"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center px-3 py-2 text-sm text-slate-700 dark:text-slate-300"
-                >
-                  <ShoppingBag className="w-4 h-4 mr-2" /> My Purchases
-                </Link>
-                <Link
                   to="/bookmarks"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center px-3 py-2 text-sm text-slate-700 dark:text-slate-300"
@@ -307,20 +268,6 @@ export default function Navbar() {
                       className="flex items-center px-3 py-2 text-sm font-semibold text-[#F2A93B]"
                     >
                       <ShieldAlert className="w-4 h-4 mr-2" /> Admin Dashboard
-                    </Link>
-                    <Link
-                      to="/admin/payments"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm font-semibold text-[#F2A93B]"
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" /> Payments
-                    </Link>
-                    <Link
-                      to="/admin/access"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center px-3 py-2 text-sm font-semibold text-[#F2A93B]"
-                    >
-                      <Shield className="w-4 h-4 mr-2" /> Subject Access
                     </Link>
                   </>
                 )}

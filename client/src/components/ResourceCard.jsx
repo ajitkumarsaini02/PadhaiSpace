@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FileText, Eye, Download, Sparkles, BookOpen, Layers, Lock, CheckCircle } from 'lucide-react';
+import { FileText, Eye, Download, BookOpen, Layers } from 'lucide-react';
 import BookmarkButton from './BookmarkButton';
 
-export default function ResourceCard({ resource, isUnlocked = true, onUnlockRequest, onOpenPDF }) {
+export default function ResourceCard({ resource }) {
   const getTypeBadge = (type) => {
     switch (type) {
       case 'notes':
@@ -46,6 +46,9 @@ export default function ResourceCard({ resource, isUnlocked = true, onUnlockRequ
                 {resource.examYear} {resource.examType ? `(${resource.examType})` : ''}
               </span>
             )}
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+              Free
+            </span>
           </div>
           <BookmarkButton resource={resource} />
         </div>
@@ -81,21 +84,12 @@ export default function ResourceCard({ resource, isUnlocked = true, onUnlockRequ
         </div>
 
         <div className="flex items-center space-x-2">
-          {isUnlocked ? (
-            <Link
-              to={`/resources/${resource._id}/read`}
-              className="px-3.5 py-1.5 bg-[#4F8FEF] hover:bg-[#3D7FE5] text-white font-bold rounded-lg transition-colors text-xs flex items-center shadow-subtle"
-            >
-              <BookOpen className="w-3.5 h-3.5 mr-1.5" /> Read PDF
-            </Link>
-          ) : (
-            <button
-              onClick={onUnlockRequest}
-              className="px-3.5 py-1.5 bg-[#F2A93B] hover:bg-[#E39A2E] text-[#0B1020] font-bold rounded-lg transition-colors text-xs flex items-center shadow-subtle cursor-pointer"
-            >
-              <Lock className="w-3.5 h-3.5 mr-1" /> Unlock (₹9)
-            </button>
-          )}
+          <Link
+            to={`/resources/${resource._id}/read`}
+            className="px-3.5 py-1.5 bg-[#4F8FEF] hover:bg-[#3D7FE5] text-white font-bold rounded-lg transition-colors text-xs flex items-center shadow-subtle"
+          >
+            <BookOpen className="w-3.5 h-3.5 mr-1.5" /> Read PDF
+          </Link>
         </div>
       </div>
     </div>
