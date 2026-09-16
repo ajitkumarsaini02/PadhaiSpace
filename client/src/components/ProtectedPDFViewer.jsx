@@ -168,8 +168,15 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
         setError(null);
 
         const typedArray = new Uint8Array(pdfArrayBuffer);
-        const loadingTask = pdfjsLib.getDocument({ data: typedArray });
-        const doc = await loadingTask.promise;
+        let doc;
+        try {
+          const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+          doc = await loadingTask.promise;
+        } catch (workerErr) {
+          console.warn('[PDFViewer] Worker task failed, trying fallback without worker:', workerErr.message);
+          const fallbackTask = pdfjsLib.getDocument({ data: typedArray, disableWorker: true });
+          doc = await fallbackTask.promise;
+        }
 
         if (isMounted) {
           setPdfDoc(doc);

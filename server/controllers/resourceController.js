@@ -444,6 +444,23 @@ ${xrefStart}
   return Buffer.from(fullPdf, 'utf-8');
 };
 
+// Helper to check if a file on disk is a non-empty, valid PDF file
+const isValidPDFFile = (filePath) => {
+  try {
+    if (!filePath || !fs.existsSync(filePath)) return false;
+    const stat = fs.statSync(filePath);
+    if (stat.size < 100) return false;
+
+    const fd = fs.openSync(filePath, 'r');
+    const buf = Buffer.alloc(10);
+    fs.readSync(fd, buf, 0, 10, 0);
+    fs.closeSync(fd);
+    return buf.toString('utf-8').includes('%PDF');
+  } catch (e) {
+    return false;
+  }
+};
+
 // @route GET /api/resources/:id/view (Protected PDF Streaming)
 exports.viewProtectedPDF = async (req, res) => {
   try {
@@ -470,16 +487,16 @@ exports.viewProtectedPDF = async (req, res) => {
     let pdfBuffer = null;
     let pdfPath = null;
 
-    // 1. Check local file on disk
+    // 1. Check local file on disk with strict PDF header validation
     if (resource.fileUrl && !resource.fileUrl.startsWith('http')) {
       const safeFilename = path.basename(resource.fileUrl);
       const testPath1 = path.join(protectedDir, safeFilename);
       const uploadsDir = path.join(__dirname, '../uploads');
       const testPath2 = path.join(uploadsDir, safeFilename);
 
-      if (fs.existsSync(testPath1) && testPath1.startsWith(protectedDir)) {
+      if (isValidPDFFile(testPath1) && testPath1.startsWith(protectedDir)) {
         pdfPath = testPath1;
-      } else if (fs.existsSync(testPath2) && testPath2.startsWith(uploadsDir)) {
+      } else if (isValidPDFFile(testPath2) && testPath2.startsWith(uploadsDir)) {
         pdfPath = testPath2;
       }
     }
