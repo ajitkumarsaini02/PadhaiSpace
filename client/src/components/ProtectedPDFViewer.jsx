@@ -244,11 +244,8 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
     };
   }, [resourceId, pdfDoc]);
 
-  // Visibility, Blur, Fullscreen, and Print Events
+  // Visibility, Fullscreen, and Print Events
   useEffect(() => {
-    const handleBlur = () => setIsFocusLost(true);
-    const handleFocus = () => setIsFocusLost(false);
-
     const handleVisibilityChange = () => {
       const currentState = document.visibilityState || 'visible';
       if (currentState === 'hidden') {
@@ -282,15 +279,11 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
       sendActivityLog('PRINT_ATTEMPT');
     };
 
-    window.addEventListener('blur', handleBlur);
-    window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     window.addEventListener('beforeprint', handleBeforePrint);
 
     return () => {
-      window.removeEventListener('blur', handleBlur);
-      window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       window.removeEventListener('beforeprint', handleBeforePrint);

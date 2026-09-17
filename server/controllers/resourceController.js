@@ -643,10 +643,11 @@ const isValidPDFFile = (filePath) => {
     if (stat.size < 100) return false;
 
     const fd = fs.openSync(filePath, 'r');
-    const buf = Buffer.alloc(10);
-    fs.readSync(fd, buf, 0, 10, 0);
+    const readBytes = Math.min(1024, stat.size);
+    const buf = Buffer.alloc(readBytes);
+    fs.readSync(fd, buf, 0, readBytes, 0);
     fs.closeSync(fd);
-    return buf.toString('utf-8').includes('%PDF');
+    return buf.toString('latin1').includes('%PDF') || buf.toString('utf-8').includes('%PDF');
   } catch (e) {
     return false;
   }
@@ -669,9 +670,11 @@ exports.viewProtectedPDF = async (req, res) => {
       await Resource.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
     }
 
-    const protectedDir = path.join(__dirname, '../protected_uploads');
-    if (!fs.existsSync(protectedDir)) {
-      fs.mkdirSync(protectedDir, { recursive: true });
+    const resolvedProtectedDir = path.resolve(path.join(__dirname, '../protected_uploads'));
+    const resolvedUploadsDir = path.resolve(path.join(__dirname, '../uploads'));
+
+    if (!fs.existsSync(resolvedProtectedDir)) {
+      fs.mkdirSync(resolvedProtectedDir, { recursive: true });
     }
 
     let pdfBuffer = null;
@@ -679,13 +682,18 @@ exports.viewProtectedPDF = async (req, res) => {
 
     if (resource.fileUrl && !resource.fileUrl.startsWith('http')) {
       const safeFilename = path.basename(resource.fileUrl);
-      const testPath1 = path.join(protectedDir, safeFilename);
-      const uploadsDir = path.join(__dirname, '../uploads');
-      const testPath2 = path.join(uploadsDir, safeFilename);
+      const testPath1 = path.resolve(path.join(resolvedProtectedDir, safeFilename));
+      const testPath2 = path.resolve(path.join(resolvedUploadsDir, safeFilename));
 
-      if (isValidPDFFile(testPath1) && testPath1.startsWith(protectedDir)) {
+      const isSubpath = (parentDir, targetPath) => {
+        const p = parentDir.toLowerCase();
+        const t = targetPath.toLowerCase();
+        return t === p || t.startsWith(p + path.sep) || t.startsWith(p.replace(/\\/g, '/') + '/');
+      };
+
+      if (isValidPDFFile(testPath1) && isSubpath(resolvedProtectedDir, testPath1)) {
         pdfPath = testPath1;
-      } else if (isValidPDFFile(testPath2) && testPath2.startsWith(uploadsDir)) {
+      } else if (isValidPDFFile(testPath2) && isSubpath(resolvedUploadsDir, testPath2)) {
         pdfPath = testPath2;
       }
     }
