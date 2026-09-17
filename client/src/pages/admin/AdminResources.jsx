@@ -359,14 +359,23 @@ export default function AdminResources() {
                 }}
                 className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-mono font-semibold"
               >
-                <option value="notes" className="bg-[#0B0F19] text-[#F8FAFC]">1. Notes</option>
-                <option value="unit-pdf" className="bg-[#0B0F19] text-[#F8FAFC]">2. Unit PDF</option>
-                <option value="pyq" className="bg-[#0B0F19] text-[#F8FAFC]">3. Previous Year Question Paper</option>
-                <option value="syllabus" className="bg-[#0B0F19] text-[#F8FAFC]">4. Syllabus</option>
-                <option value="exam-resource" className="bg-[#0B0F19] text-[#F8FAFC]">5. Exam Resource</option>
-                <option value="pdf" className="bg-[#0B0F19] text-[#F8FAFC]">6. PDF Document</option>
-                <option value="other" className="bg-[#0B0F19] text-[#F8FAFC]">7. Other</option>
+                <option value="notes" className="bg-[#0B0F19] text-[#F8FAFC]">Notes</option>
+                <option value="unit-pdf" className="bg-[#0B0F19] text-[#F8FAFC]">Unit PDF</option>
+                <option value="pyq" className="bg-[#0B0F19] text-[#F8FAFC]">Previous Year Question Paper</option>
+                <option value="syllabus" className="bg-[#0B0F19] text-[#F8FAFC]">Syllabus</option>
+                <option value="exam-resource" className="bg-[#0B0F19] text-[#F8FAFC]">Exam Resource</option>
+                <option value="pdf" className="bg-[#0B0F19] text-[#F8FAFC]">PDF Document</option>
+                <option value="other" className="bg-[#0B0F19] text-[#F8FAFC]">Other</option>
               </select>
+              <p className="text-[11px] font-mono text-[#38BDF8] mt-1.5 font-semibold">
+                {form.type === 'notes' && 'Upload study notes for a subject/unit.'}
+                {form.type === 'unit-pdf' && 'Upload a PDF specifically belonging to one particular unit.'}
+                {form.type === 'pyq' && 'Upload a previous year question paper.'}
+                {form.type === 'syllabus' && 'Upload a subject or academic syllabus.'}
+                {form.type === 'exam-resource' && 'Upload exam preparation material.'}
+                {form.type === 'pdf' && 'Upload a general reference PDF document.'}
+                {form.type === 'other' && 'Upload miscellaneous study or reference material.'}
+              </p>
             </div>
           </div>
 
