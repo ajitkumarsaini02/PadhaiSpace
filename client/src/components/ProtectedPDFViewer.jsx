@@ -25,20 +25,46 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { activityService } from '../services/api';
 
-// Configure PDF.js worker with unpkg fallback
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '3.11.174'}/build/pdf.worker.min.js`;
+// Configure PDF.js worker using Cloudflare CDNJS with unpkg fallback
+const PDFJS_VERSION = pdfjsLib.version || '3.11.174';
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/pdf.worker.min.js`;
 
-// Individual PDF Page Canvas Component
+// Individual PDF Page Canvas Component with IntersectionObserver Lazy Loading
 function PDFPageCanvas({ pdfDoc, pageNum, scale, rotation, isDarkMode, userEmail, userIp, currentTimeString }) {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const renderTaskRef = useRef(null);
+  
+  const [isVisible, setIsVisible] = useState(pageNum <= 2); // First 2 pages render immediately
   const [loading, setLoading] = useState(true);
 
+  // Lazy render canvas only when page is within 300px of viewport
   useEffect(() => {
+    if (isVisible) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { rootMargin: '300px 0px 300px 0px' }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible || !pdfDoc || !canvasRef.current) return;
     let isCancelled = false;
 
     const renderPage = async () => {
-      if (!pdfDoc || !canvasRef.current) return;
       try {
         setLoading(true);
         if (renderTaskRef.current) {
@@ -64,7 +90,6 @@ function PDFPageCanvas({ pdfDoc, pageNum, scale, rotation, isDarkMode, userEmail
           viewport: viewport,
         };
 
-
         const renderTask = page.render(renderContext);
         renderTaskRef.current = renderTask;
         await renderTask.promise;
@@ -84,19 +109,20 @@ function PDFPageCanvas({ pdfDoc, pageNum, scale, rotation, isDarkMode, userEmail
         renderTaskRef.current.cancel();
       }
     };
-  }, [pdfDoc, pageNum, scale, rotation]);
+  }, [isVisible, pdfDoc, pageNum, scale, rotation]);
 
   return (
     <div
+      ref={containerRef}
       id={`pdf-page-${pageNum}`}
       data-page-number={pageNum}
-      className={`relative inline-block border border-slate-800 shadow-2xl rounded-xl overflow-hidden my-4 transition-all duration-200 select-none ${
+      className={`relative inline-block border border-slate-800 shadow-2xl rounded-xl overflow-hidden my-4 transition-all duration-200 select-none min-h-[400px] ${
         isDarkMode ? 'bg-slate-900' : 'bg-white'
       }`}
       style={isDarkMode ? { filter: 'invert(0.92) hue-rotate(180deg)' } : {}}
     >
       {loading && (
-        <div className="absolute inset-0 z-20 bg-slate-950/80 flex items-center justify-center text-slate-400 font-mono text-xs">
+        <div className="absolute inset-0 z-20 bg-slate-950/80 flex items-center justify-center text-slate-400 font-mono text-xs p-8">
           <Loader2 className="w-5 h-5 animate-spin mr-2 text-blue-500" /> Loading Page {pageNum}...
         </div>
       )}
@@ -131,7 +157,6 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
   const [pageNumber, setPageNumber] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(1.35);
-
   const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(false);
@@ -159,19 +184,25 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
   const prevVisibilityRef = useRef(document.visibilityState || 'visible');
   const prevFullscreenRef = useRef(Boolean(document.fullscreenElement));
 
-  // Dynamic User IP Fetching
+  // Dynamic User IP Fetching with 800ms Abort Controller Timeout
   useEffect(() => {
     let active = true;
-    fetch('https://api.ipify.org?format=json')
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 800);
+
+    fetch('https://api.ipify.org?format=json', { signal: controller.signal })
       .then((res) => res.json())
       .then((data) => {
         if (active && data && data.ip) {
           setUserIp(data.ip);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => clearTimeout(timeoutId));
+
     return () => {
       active = false;
+      controller.abort();
     };
   }, []);
 
@@ -265,7 +296,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
     };
   }, [resourceId]);
 
-  // Load PDF Document from ArrayBuffer
+  // Load PDF Document from ArrayBuffer with multi-stage fallback
   useEffect(() => {
     let isMounted = true;
     if (!pdfArrayBuffer) return;
@@ -277,13 +308,30 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
 
         const typedArray = new Uint8Array(pdfArrayBuffer);
         let doc;
+
+        // Stage 1: Primary Worker Task
         try {
-          const loadingTask = pdfjsLib.getDocument({ data: typedArray });
+          const loadingTask = pdfjsLib.getDocument({
+            data: typedArray,
+            cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/cmaps/`,
+            cMapPacked: true,
+          });
           doc = await loadingTask.promise;
         } catch (workerErr) {
-          console.warn('[PDFViewer] Worker task failed, using fallback:', workerErr.message);
-          const fallbackTask = pdfjsLib.getDocument({ data: typedArray, disableWorker: true });
-          doc = await fallbackTask.promise;
+          console.warn('[PDFViewer] Primary worker task failed, trying stage 2 fallback:', workerErr.message);
+          
+          // Stage 2: unpkg worker fallback
+          try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.js`;
+            const unpkgTask = pdfjsLib.getDocument({ data: typedArray });
+            doc = await unpkgTask.promise;
+          } catch (unpkgErr) {
+            console.warn('[PDFViewer] Stage 2 unpkg worker failed, trying in-memory stage 3 fallback:', unpkgErr.message);
+
+            // Stage 3: In-Memory non-worker fallback
+            const fallbackTask = pdfjsLib.getDocument({ data: typedArray, disableWorker: true });
+            doc = await fallbackTask.promise;
+          }
         }
 
         if (isMounted) {
@@ -296,7 +344,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
       } catch (err) {
         console.error('Error loading PDF document:', err);
         if (isMounted) {
-          setError('Failed to load protected PDF document. Please try again.');
+          setError('Failed to load protected PDF document. Please try reloading the page.');
           setLoading(false);
         }
       }
@@ -501,7 +549,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
 
       {/* TOP HEADER BAR MATCHING SCREENSHOT */}
       <div className="bg-[#0B0F19] border-b border-[#1E293B] px-3 sm:px-4 py-2.5 text-white flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-xl shrink-0">
-        {/* Left: Back Arrow Button, Title & Green Full Access Badge */}
+        {/* Left: Back Arrow Button, Title & READ ONLY Badge */}
         <div className="flex items-center space-x-2.5 min-w-0">
           <button
             onClick={handleBack}
@@ -518,7 +566,6 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
             <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[9px] sm:text-[10px] font-black uppercase tracking-wider shrink-0">
               <Lock className="w-3 h-3 mr-1 text-emerald-400" /> READ ONLY
             </span>
-
           </div>
         </div>
 
