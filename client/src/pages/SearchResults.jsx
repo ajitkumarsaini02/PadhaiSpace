@@ -74,13 +74,13 @@ export default function SearchResults() {
       <div className="border-b border-slate-200 dark:border-[#1E293B] pb-6">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-[#38BDF8] border border-indigo-200 dark:border-indigo-800 text-xs font-mono font-bold mb-2">
           <Search className="w-3.5 h-3.5" />
-          <span>MongoDB Global Search</span>
+          <span>Global Search</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
           Search Results for "{query}"
         </h1>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] mt-1">
-          Found {counts.total} matching items across Subjects, Units, Notes, PYQs, and Resources in MongoDB
+          Found {counts.total} matching items across Subjects, Units, Notes, PYQs, and Resources
         </p>
       </div>
 

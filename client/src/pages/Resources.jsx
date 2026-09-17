@@ -161,7 +161,7 @@ export default function Resources() {
       ) : resources.length === 0 ? (
         <EmptyState
           title="No resources found"
-          message="No matching resources exist in MongoDB for your selected criteria."
+          message="No matching resources exist for your selected criteria."
           actionLabel="Reset All Filters"
           onAction={handleReset}
         />

@@ -205,9 +205,6 @@ export default function PYQs() {
             <FileText className="w-4 h-4 text-[#6D28D9] dark:text-[#C084FC] mr-2" />
             2. Select Question Paper Year
           </h2>
-          <span className="text-[11px] font-mono text-slate-500 dark:text-[#94A3B8]">
-            Dynamic MongoDB Exam Years
-          </span>
         </div>
 
         {loadingPaperYears ? (
@@ -216,7 +213,7 @@ export default function PYQs() {
           </div>
         ) : availablePaperYears.length === 0 ? (
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
-            No exam paper years indexed in MongoDB {selectedAcademicYear ? `for ${selectedAcademicYear}` : ''}.
+            No exam paper years available {selectedAcademicYear ? `for ${selectedAcademicYear}` : ''}.
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2.5">

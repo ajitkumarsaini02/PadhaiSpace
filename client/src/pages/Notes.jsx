@@ -120,9 +120,6 @@ export default function Notes() {
             <Layers className="w-5 h-5 text-[#4F46E5] dark:text-[#38BDF8] mr-2" />
             Browse Notes by Source
           </h2>
-          <span className="text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
-            Real MongoDB Counts
-          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
