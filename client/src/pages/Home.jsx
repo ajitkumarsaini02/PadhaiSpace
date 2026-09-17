@@ -101,11 +101,6 @@ export default function Home() {
       {/* 1. HERO + SEARCH */}
       <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 border-b border-slate-200 dark:border-[#1E293B] bg-slate-50 dark:bg-[#020617] tech-grid-pattern overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-[#111827] border border-indigo-200 dark:border-[#1E293B] text-xs font-mono font-bold text-[#4F46E5] dark:text-[#818CF8] mb-6 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>100% Free Open Academic Space</span>
-          </div>
-
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight max-w-4xl mx-auto leading-tight mb-6">
             Everything You Need for{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4F46E5] via-[#2563EB] to-[#6366F1] dark:from-[#38BDF8] dark:via-[#3B82F6] dark:to-[#8B5CF6]">
