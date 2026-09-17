@@ -14,7 +14,7 @@ const ResourceSchema = new mongoose.Schema(
     academicYear: { type: String, default: '' }, // e.g. '1st Year', '2nd Year', '3rd Year', '4th Year'
     paperYear: { type: Number, default: null }, // Actual question paper year, e.g. 2025
     year: { type: Number, default: null }, // General year if applicable
-    subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
+    subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', default: null },
     unitId: { type: mongoose.Schema.Types.ObjectId, ref: 'Unit', default: null },
     fileUrl: { type: String, default: '' },
     thumbnail: { type: String, default: '' },

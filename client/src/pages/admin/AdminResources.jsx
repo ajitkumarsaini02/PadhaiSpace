@@ -151,9 +151,60 @@ export default function AdminResources() {
       return;
     }
 
-    if (!form.subjectId) {
-      setMsg({ type: 'error', text: 'Please select a Subject' });
-      return;
+    const isNotesOrUnitPdf = form.type === 'notes' || form.type === 'unit-pdf';
+    const isPyq = form.type === 'pyq';
+
+    if (isNotesOrUnitPdf) {
+      if (!form.source.trim()) {
+        setMsg({
+          type: 'error',
+          text: `Source / Provider is required for ${form.type === 'notes' ? 'Notes' : 'Unit PDF'}`,
+        });
+        return;
+      }
+      if (!form.academicYear) {
+        setMsg({
+          type: 'error',
+          text: `Academic Year is required for ${form.type === 'notes' ? 'Notes' : 'Unit PDF'}`,
+        });
+        return;
+      }
+      if (!form.subjectId) {
+        setMsg({
+          type: 'error',
+          text: `Subject is required for ${form.type === 'notes' ? 'Notes' : 'Unit PDF'}`,
+        });
+        return;
+      }
+      if (!form.unitId) {
+        setMsg({
+          type: 'error',
+          text: `Unit is required for ${form.type === 'notes' ? 'Notes' : 'Unit PDF'}`,
+        });
+        return;
+      }
+    } else if (isPyq) {
+      if (!form.academicYear) {
+        setMsg({
+          type: 'error',
+          text: 'Academic Year is required for Previous Year Question Paper (PYQ)',
+        });
+        return;
+      }
+      if (!form.paperYear || isNaN(Number(form.paperYear))) {
+        setMsg({
+          type: 'error',
+          text: 'Paper Year (e.g. 2025) is required for Previous Year Question Paper (PYQ)',
+        });
+        return;
+      }
+      if (!form.subjectId) {
+        setMsg({
+          type: 'error',
+          text: 'Subject is required for Previous Year Question Paper (PYQ)',
+        });
+        return;
+      }
     }
 
     if (!editingId && !file && !form.externalUrl) {
@@ -167,14 +218,14 @@ export default function AdminResources() {
       formData.append('title', form.title.trim());
       formData.append('description', form.description.trim());
       formData.append('type', form.type);
-      formData.append('subjectId', form.subjectId);
 
-      if (form.unitId) formData.append('unitId', form.unitId);
+      if (form.subjectId) formData.append('subjectId', form.subjectId);
+      if (form.unitId && !isPyq && form.type !== 'syllabus') formData.append('unitId', form.unitId);
       if (form.externalUrl) formData.append('externalUrl', form.externalUrl.trim());
       if (form.tags) formData.append('tags', form.tags);
       if (form.source) formData.append('source', form.source.trim());
       if (form.academicYear) formData.append('academicYear', form.academicYear);
-      if (form.paperYear) formData.append('paperYear', form.paperYear);
+      if (isPyq && form.paperYear) formData.append('paperYear', form.paperYear);
       if (form.year) formData.append('year', form.year);
       if (file) formData.append('file', file);
 
@@ -270,49 +321,154 @@ export default function AdminResources() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Resource Title *</label>
+              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                Resource Title *
+              </label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="e.g. Operating System Unit 1 Notes"
+                placeholder={
+                  form.type === 'notes' || form.type === 'unit-pdf'
+                    ? 'e.g. Operating System Unit 1 Master Notes'
+                    : form.type === 'pyq'
+                    ? 'e.g. DBMS End-Semester Question Paper 2025'
+                    : form.type === 'syllabus'
+                    ? 'e.g. Computer Science Official Syllabus 2025-26'
+                    : 'e.g. Engineering Mathematics Quick Formula Sheet'
+                }
                 required
                 className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Resource Type *</label>
+              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                Resource Type *
+              </label>
               <select
                 value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
+                onChange={(e) => {
+                  const newType = e.target.value;
+                  setForm((prev) => ({
+                    ...prev,
+                    type: newType,
+                    paperYear: newType === 'pyq' ? prev.paperYear : '',
+                    unitId: (newType === 'pyq' || newType === 'syllabus') ? '' : prev.unitId,
+                  }));
+                }}
                 className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-mono font-semibold"
               >
-                <option value="notes" className="bg-[#0B0F19] text-[#F8FAFC]">Study Notes</option>
-                <option value="unit-pdf" className="bg-[#0B0F19] text-[#F8FAFC]">Unit PDF</option>
-                <option value="pyq" className="bg-[#0B0F19] text-[#F8FAFC]">PYQ (Past Exam Paper)</option>
-                <option value="syllabus" className="bg-[#0B0F19] text-[#F8FAFC]">Syllabus</option>
-                <option value="exam-resource" className="bg-[#0B0F19] text-[#F8FAFC]">Exam Resource</option>
-                <option value="pdf" className="bg-[#0B0F19] text-[#F8FAFC]">PDF Document</option>
-                <option value="other" className="bg-[#0B0F19] text-[#F8FAFC]">Other File</option>
+                <option value="notes" className="bg-[#0B0F19] text-[#F8FAFC]">1. Notes</option>
+                <option value="unit-pdf" className="bg-[#0B0F19] text-[#F8FAFC]">2. Unit PDF</option>
+                <option value="pyq" className="bg-[#0B0F19] text-[#F8FAFC]">3. Previous Year Question Paper</option>
+                <option value="syllabus" className="bg-[#0B0F19] text-[#F8FAFC]">4. Syllabus</option>
+                <option value="exam-resource" className="bg-[#0B0F19] text-[#F8FAFC]">5. Exam Resource</option>
+                <option value="pdf" className="bg-[#0B0F19] text-[#F8FAFC]">6. PDF Document</option>
+                <option value="other" className="bg-[#0B0F19] text-[#F8FAFC]">7. Other</option>
               </select>
             </div>
           </div>
 
-          <div className="p-4 bg-[#0F172A] rounded-xl border border-[#1E293B] space-y-3">
+          {/* DYNAMIC FIELD HELPERS DEPENDING ON TYPE */}
+          <div className="p-3 bg-[#0B0F19] rounded-xl border border-[#1E293B] text-xs font-mono text-[#38BDF8] flex items-center justify-between">
+            <span>
+              {form.type === 'notes'
+                ? '📚 Notes Mode: Title, Source, Academic Year, Subject, Unit, and PDF File are required.'
+                : form.type === 'unit-pdf'
+                ? '📄 Unit PDF Mode: Title, Source, Academic Year, Subject, Unit, and PDF File are required.'
+                : form.type === 'pyq'
+                ? '📋 PYQ Mode: Title, Academic Year, Paper Year (e.g. 2025), Subject, and PDF File are required.'
+                : form.type === 'syllabus'
+                ? '📑 Syllabus Mode: Title and PDF File are required. Academic Year and Subject are optional.'
+                : form.type === 'exam-resource'
+                ? '📝 Exam Resource Mode: Title and PDF File are required. Academic Year, Subject, and Unit are optional.'
+                : '📄 Generic PDF / Other Mode: Title and PDF File are required. Academic Year, Subject, and Unit are optional.'}
+            </span>
+          </div>
+
+          <div className="p-4 bg-[#0F172A] rounded-xl border border-[#1E293B] space-y-4">
             <p className="text-[11px] font-mono font-bold text-[#38BDF8] uppercase tracking-wider">
-              Academic Mapping (Subject → Unit)
+              Dynamic Configuration Fields
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* SOURCE / PROVIDER FIELD (Shown for notes, unit-pdf, pyq) */}
+              {(form.type === 'notes' || form.type === 'unit-pdf' || form.type === 'pyq') && (
+                <div>
+                  <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                    Source / Provider {(form.type === 'notes' || form.type === 'unit-pdf') ? '*' : '(Optional)'}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.source}
+                    onChange={(e) => setForm({ ...form, source: e.target.value })}
+                    placeholder={
+                      form.type === 'pyq'
+                        ? 'e.g. AKTU / University / Gateway Classes'
+                        : 'e.g. Gateway Classes, EduShine Classes, Multi Atom'
+                    }
+                    required={form.type === 'notes' || form.type === 'unit-pdf'}
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
+                  />
+                </div>
+              )}
+
+              {/* ACADEMIC YEAR FIELD (Shown for all types) */}
               <div>
-                <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Subject *</label>
+                <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                  Academic Year {(form.type === 'notes' || form.type === 'unit-pdf' || form.type === 'pyq') ? '*' : '(Optional)'}
+                </label>
+                <select
+                  value={form.academicYear}
+                  onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+                  required={form.type === 'notes' || form.type === 'unit-pdf' || form.type === 'pyq'}
+                  className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-mono font-semibold"
+                >
+                  <option value="" className="bg-[#0B0F19] text-[#F8FAFC]">Select Academic Year</option>
+                  <option value="1st Year" className="bg-[#0B0F19] text-[#F8FAFC]">1st Year</option>
+                  <option value="2nd Year" className="bg-[#0B0F19] text-[#F8FAFC]">2nd Year</option>
+                  <option value="3rd Year" className="bg-[#0B0F19] text-[#F8FAFC]">3rd Year</option>
+                  <option value="4th Year" className="bg-[#0B0F19] text-[#F8FAFC]">4th Year</option>
+                </select>
+              </div>
+
+              {/* PAPER YEAR FIELD (ONLY Shown for PYQ!) */}
+              {form.type === 'pyq' && (
+                <div>
+                  <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                    Paper Year (e.g. 2026, 2025) *
+                  </label>
+                  <input
+                    type="number"
+                    value={form.paperYear}
+                    onChange={(e) => setForm({ ...form, paperYear: e.target.value })}
+                    placeholder="e.g. 2025"
+                    required
+                    min="1900"
+                    max="2100"
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
+                  />
+                  <span className="text-[10px] font-mono text-[#94A3B8] mt-0.5 block">
+                    Exact exam question paper year
+                  </span>
+                </div>
+              )}
+
+              {/* SUBJECT FIELD (Shown for all types) */}
+              <div>
+                <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                  Subject {(form.type === 'notes' || form.type === 'unit-pdf' || form.type === 'pyq') ? '*' : '(Optional)'}
+                </label>
                 <select
                   value={form.subjectId}
-                  onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
-                  required
+                  onChange={(e) => setForm({ ...form, subjectId: e.target.value, unitId: '' })}
+                  required={form.type === 'notes' || form.type === 'unit-pdf' || form.type === 'pyq'}
                   className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl font-mono font-bold focus:outline-none focus:border-[#38BDF8]"
                 >
-                  <option value="" className="bg-[#0B0F19] text-[#F8FAFC]">Select Subject ({allSubjects.length} Available)</option>
+                  <option value="" className="bg-[#0B0F19] text-[#F8FAFC]">
+                    Select Subject ({allSubjects.length} Available)
+                  </option>
                   {allSubjects.map((s) => (
                     <option key={s._id} value={s._id} className="bg-[#0B0F19] text-[#F8FAFC]">
                       {s.name} {s.code ? `(${s.code})` : ''}
@@ -321,28 +477,36 @@ export default function AdminResources() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Unit</label>
-                <select
-                  value={form.unitId}
-                  onChange={(e) => setForm({ ...form, unitId: e.target.value })}
-                  disabled={!form.subjectId || units.length === 0}
-                  className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl font-mono font-semibold focus:outline-none focus:border-[#38BDF8] disabled:opacity-40"
-                >
-                  <option value="" className="bg-[#0B0F19] text-[#F8FAFC]">
-                    {!form.subjectId
-                      ? 'Select Subject first'
-                      : units.length === 0
-                      ? 'No Units available'
-                      : 'Entire Subject / All Units'}
-                  </option>
-                  {units.map((u) => (
-                    <option key={u._id} value={u._id} className="bg-[#0B0F19] text-[#F8FAFC]">
-                      Unit {u.unitNumber}: {u.title}
+              {/* UNIT FIELD (Shown for notes, unit-pdf, exam-resource, pdf, other. NOT shown for pyq or syllabus!) */}
+              {form.type !== 'pyq' && form.type !== 'syllabus' && (
+                <div>
+                  <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
+                    Unit {(form.type === 'notes' || form.type === 'unit-pdf') ? '*' : '(Optional)'}
+                  </label>
+                  <select
+                    value={form.unitId}
+                    onChange={(e) => setForm({ ...form, unitId: e.target.value })}
+                    required={form.type === 'notes' || form.type === 'unit-pdf'}
+                    disabled={!form.subjectId || units.length === 0}
+                    className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl font-mono font-semibold focus:outline-none focus:border-[#38BDF8] disabled:opacity-40"
+                  >
+                    <option value="" className="bg-[#0B0F19] text-[#F8FAFC]">
+                      {!form.subjectId
+                        ? 'Select Subject first'
+                        : units.length === 0
+                        ? 'No Units available'
+                        : (form.type === 'notes' || form.type === 'unit-pdf')
+                        ? 'Select Specific Unit'
+                        : 'Entire Subject / All Units'}
                     </option>
-                  ))}
-                </select>
-              </div>
+                    {units.map((u) => (
+                      <option key={u._id} value={u._id} className="bg-[#0B0F19] text-[#F8FAFC]">
+                        Unit {u.unitNumber}: {u.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
 
@@ -372,60 +536,6 @@ export default function AdminResources() {
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Brief summary of resource content..."
-                className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
-              />
-            </div>
-          </div>
-
-          {/* DYNAMIC FIELD HELPERS DEPENDING ON TYPE */}
-          <div className="p-3 bg-[#0B0F19] rounded-xl border border-[#1E293B] text-xs font-mono text-[#38BDF8] flex items-center justify-between">
-            <span>
-              {form.type === 'pyq'
-                ? '📋 PYQ Mode: Academic Year + Paper Year + Subject are primary fields. Source is optional.'
-                : '📚 Notes Mode: Source + Academic Year + Subject + Unit are primary fields.'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
-                Academic Year {form.type === 'notes' || form.type === 'pyq' ? '*' : ''}
-              </label>
-              <select
-                value={form.academicYear}
-                onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
-                className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-mono font-semibold"
-              >
-                <option value="" className="bg-[#0B0F19] text-[#F8FAFC]">Select Year</option>
-                <option value="1st Year" className="bg-[#0B0F19] text-[#F8FAFC]">1st Year</option>
-                <option value="2nd Year" className="bg-[#0B0F19] text-[#F8FAFC]">2nd Year</option>
-                <option value="3rd Year" className="bg-[#0B0F19] text-[#F8FAFC]">3rd Year</option>
-                <option value="4th Year" className="bg-[#0B0F19] text-[#F8FAFC]">4th Year</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
-                Paper Year {form.type === 'pyq' ? '(Required for PYQ) *' : '(Optional)'}
-              </label>
-              <input
-                type="number"
-                value={form.paperYear}
-                onChange={(e) => setForm({ ...form, paperYear: e.target.value })}
-                placeholder="e.g. 2025"
-                className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">
-                Source / Provider {form.type === 'notes' ? '(e.g. Gateway Classes)' : '(Optional)'}
-              </label>
-              <input
-                type="text"
-                value={form.source}
-                onChange={(e) => setForm({ ...form, source: e.target.value })}
-                placeholder="e.g. Gateway Classes / AKTU"
                 className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
               />
             </div>

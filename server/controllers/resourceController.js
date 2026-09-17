@@ -325,52 +325,144 @@ exports.getResourceById = async (req, res) => {
   }
 };
 
+// Helper for validating and normalizing resource payloads server-side
+const validateAndNormalizeResourcePayload = async (payload, isUpdate = false) => {
+  const {
+    title,
+    type,
+    subjectId,
+    unitId,
+    source,
+    academicYear,
+    paperYear,
+    year,
+    description,
+    externalUrl,
+    tags,
+  } = payload;
+
+  if (!isUpdate || title !== undefined) {
+    if (!title || typeof title !== 'string' || !title.trim()) {
+      throw new Error('Resource Title is required');
+    }
+  }
+
+  const rawType = (type || 'notes').toString().toLowerCase().trim();
+  const validTypes = ['notes', 'unit-pdf', 'pyq', 'syllabus', 'exam-resource', 'pdf', 'other'];
+  if (!validTypes.includes(rawType)) {
+    throw new Error(`Invalid Resource Type. Must be one of: ${validTypes.join(', ')}`);
+  }
+
+  const cleanTitle = title ? title.trim() : '';
+  const cleanDescription = description ? description.trim() : '';
+  const cleanSource = source ? source.trim() : '';
+  const cleanAcademicYear = academicYear ? academicYear.trim() : '';
+  const cleanExternalUrl = externalUrl ? externalUrl.trim() : '';
+
+  let validSubjectId = null;
+  if (subjectId && subjectId !== 'all') {
+    if (!mongoose.Types.ObjectId.isValid(subjectId)) {
+      throw new Error('Invalid Subject ID format');
+    }
+    const subjectExists = await Subject.findById(subjectId);
+    if (!subjectExists) {
+      throw new Error('Selected Subject does not exist');
+    }
+    validSubjectId = subjectId;
+  }
+
+  let validUnitId = null;
+  if (unitId && unitId !== 'all') {
+    if (!mongoose.Types.ObjectId.isValid(unitId)) {
+      throw new Error('Invalid Unit ID format');
+    }
+    const unitExists = await Unit.findById(unitId);
+    if (!unitExists) {
+      throw new Error('Selected Unit does not exist');
+    }
+    validUnitId = unitId;
+  }
+
+  let numPaperYear = null;
+  if (paperYear !== undefined && paperYear !== null && paperYear !== '') {
+    const pYear = Number(paperYear);
+    if (isNaN(pYear) || pYear < 1900 || pYear > 2100) {
+      throw new Error('Paper Year must be a valid 4-digit year (e.g. 2025)');
+    }
+    numPaperYear = pYear;
+  }
+
+  // Strict Type-Based Business Rules
+  if (rawType === 'notes' || rawType === 'unit-pdf') {
+    if (!cleanAcademicYear) {
+      throw new Error(`Academic Year is required for ${rawType === 'notes' ? 'Notes' : 'Unit PDF'}`);
+    }
+    if (!validSubjectId) {
+      throw new Error(`Subject is required for ${rawType === 'notes' ? 'Notes' : 'Unit PDF'}`);
+    }
+    if (!validUnitId) {
+      throw new Error(`Unit is required for ${rawType === 'notes' ? 'Notes' : 'Unit PDF'}`);
+    }
+    if (!cleanSource) {
+      throw new Error(`Source / Provider is required for ${rawType === 'notes' ? 'Notes' : 'Unit PDF'}`);
+    }
+    numPaperYear = null;
+  } else if (rawType === 'pyq') {
+    if (!cleanAcademicYear) {
+      throw new Error('Academic Year is required for Previous Year Question Paper (PYQ)');
+    }
+    if (!numPaperYear) {
+      throw new Error('Paper Year is required for Previous Year Question Paper (PYQ)');
+    }
+    if (!validSubjectId) {
+      throw new Error('Subject is required for Previous Year Question Paper (PYQ)');
+    }
+    validUnitId = null;
+  } else if (rawType === 'syllabus') {
+    validUnitId = null;
+    numPaperYear = null;
+  } else {
+    numPaperYear = null;
+  }
+
+  const parsedTags = Array.isArray(tags)
+    ? tags.map((t) => t.toString().trim()).filter(Boolean)
+    : typeof tags === 'string'
+    ? tags.split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  return {
+    title: cleanTitle,
+    description: cleanDescription,
+    type: rawType,
+    subjectId: validSubjectId,
+    unitId: validUnitId,
+    source: cleanSource,
+    academicYear: cleanAcademicYear,
+    paperYear: numPaperYear,
+    year: year ? Number(year) : null,
+    externalUrl: cleanExternalUrl,
+    tags: parsedTags,
+  };
+};
+
 // @route POST /api/resources (Admin)
 exports.createResource = async (req, res) => {
   try {
-    const { title, description, type, subjectId, unitId, externalUrl, tags, source, academicYear, paperYear, year } = req.body;
-
-    if (!title) {
-      return res.status(400).json({ success: false, message: 'Resource Title is required' });
-    }
-
-    if (!subjectId) {
-      return res.status(400).json({ success: false, message: 'Subject is required' });
-    }
-
-    const subject = await Subject.findById(subjectId);
-    if (!subject) {
-      return res.status(400).json({ success: false, message: 'Invalid Subject selected' });
-    }
+    const validatedData = await validateAndNormalizeResourcePayload(req.body, false);
 
     let fileUrl = '';
     if (req.file) {
       fileUrl = `/uploads/${req.file.filename}`;
     } else if (req.body.fileUrl) {
       fileUrl = req.body.fileUrl;
-    } else if (!externalUrl) {
+    } else if (!validatedData.externalUrl) {
       return res.status(400).json({ success: false, message: 'PDF File upload is required' });
     }
 
-    const parsedTags = Array.isArray(tags) 
-      ? tags 
-      : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
-
-    let canonicalType = (type || 'notes').toLowerCase();
-
     const resource = await Resource.create({
-      title,
-      description: description || '',
-      type: canonicalType,
-      subjectId,
-      unitId: unitId || null,
+      ...validatedData,
       fileUrl,
-      externalUrl: externalUrl || '',
-      tags: parsedTags,
-      source: source || '',
-      academicYear: academicYear || '',
-      paperYear: paperYear ? Number(paperYear) : null,
-      year: year ? Number(year) : null,
     });
 
     const populated = await Resource.findById(resource._id)
@@ -399,25 +491,15 @@ exports.updateResource = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Resource not found' });
     }
 
-    const updateData = { ...req.body };
+    const mergedPayload = { ...existingResource.toObject(), ...req.body };
+    const validatedData = await validateAndNormalizeResourcePayload(mergedPayload, true);
 
     if (req.file) {
       deleteFileFromDisk(existingResource.fileUrl);
-      updateData.fileUrl = `/uploads/${req.file.filename}`;
+      validatedData.fileUrl = `/uploads/${req.file.filename}`;
     }
 
-    if (typeof updateData.tags === 'string') {
-      updateData.tags = updateData.tags.split(',').map(t => t.trim()).filter(Boolean);
-    }
-
-    if (updateData.type && ['pdf', 'unit-pdf', 'Unit PDF'].includes(updateData.type)) {
-      updateData.type = 'notes';
-    }
-
-    if (updateData.paperYear) updateData.paperYear = Number(updateData.paperYear);
-    if (updateData.year) updateData.year = Number(updateData.year);
-
-    const resource = await Resource.findByIdAndUpdate(req.params.id, updateData, { new: true })
+    const resource = await Resource.findByIdAndUpdate(req.params.id, validatedData, { new: true })
       .populate('subjectId', 'name code')
       .populate('unitId', 'unitNumber title');
 
