@@ -156,7 +156,8 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [numPages, setNumPages] = useState(0);
-  const [scale, setScale] = useState(1.35);
+  const [scale, setScale] = useState(0.85);
+
   const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showThumbnails, setShowThumbnails] = useState(false);
