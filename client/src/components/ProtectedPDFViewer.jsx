@@ -19,7 +19,9 @@ import {
   Sun,
   RefreshCw,
   Layers,
+  Lock,
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 import { activityService } from '../services/api';
 
@@ -514,8 +516,9 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
               {title}
             </h1>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[9px] sm:text-[10px] font-black uppercase tracking-wider shrink-0">
-              + FULL ACCESS UNLOCKED
+              <Lock className="w-3 h-3 mr-1 text-emerald-400" /> READ ONLY
             </span>
+
           </div>
         </div>
 
