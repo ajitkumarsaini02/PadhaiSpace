@@ -62,7 +62,9 @@ export default function ResourceCard({ resource }) {
 
         {/* Title */}
         <h4 className="text-sm md:text-base font-bold text-slate-900 dark:text-[#F8FAFC] group-hover:text-[#4F46E5] dark:group-hover:text-[#38BDF8] transition-colors line-clamp-2 mb-2 leading-snug">
-          <Link to={`/resources/${resource._id}`}>{resource.title}</Link>
+          <Link to={`/resources/${resource._id}/read`}>
+            {resource.title}
+          </Link>
         </h4>
 
         {/* Subject & Date Meta */}
@@ -104,6 +106,8 @@ export default function ResourceCard({ resource }) {
         >
           Open <ArrowRight className="w-3.5 h-3.5 ml-1" />
         </Link>
+
+
       </div>
     </div>
   );

@@ -122,6 +122,8 @@ export default function ResourceDetail() {
             to={`/resources/${resource._id}/read`}
             className="px-6 py-3 bg-[#4F8FEF] hover:bg-[#3D7FE5] text-white font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center shrink-0 hover:scale-105"
           >
+
+
             <BookOpen className="w-4 h-4 mr-2" /> Open Protected PDF Reader
           </Link>
         </div>

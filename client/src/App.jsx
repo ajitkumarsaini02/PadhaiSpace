@@ -45,11 +45,15 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const location = useLocation();
+  const isReaderRoute = location.pathname.includes('/read') || location.pathname.includes('/view');
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#070A12]">
       <ScrollToTop />
-      <Navbar />
-      <main className="flex-grow">
+      {!isReaderRoute && <Navbar />}
+      <main className="flex-grow flex flex-col">
+
         <Routes>
           {/* Public Academic Routes */}
           <Route path="/" element={<Home />} />
@@ -193,7 +197,8 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
+      {!isReaderRoute && <Footer />}
     </div>
   );
 }
+

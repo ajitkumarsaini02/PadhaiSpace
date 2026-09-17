@@ -1024,10 +1024,12 @@ export default function AdminResources() {
                       <td className="py-3.5 px-3 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end space-x-1">
                           <Link
-                            to={`/resources/${r._id}`}
+                            to={`/resources/${r._id}/read`}
                             className="p-1.5 text-blue-600 dark:text-[#38BDF8] hover:bg-slate-100 dark:hover:bg-[#1E293B] rounded-lg transition-colors flex items-center font-mono text-[11px]"
                             title="View / Open Resource"
                           >
+
+
                             <Eye className="w-3.5 h-3.5 mr-1" /> View
                           </Link>
 
