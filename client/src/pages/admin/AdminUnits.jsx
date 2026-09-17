@@ -151,22 +151,22 @@ export default function AdminUnits() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-[#F8FAFC]">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-slate-900 dark:text-[#F8FAFC]">
       <AdminNav
         title="Unit Management"
         subtitle="Manage syllabus unit topics, reorder unit numbers, and view linked resources"
       />
 
       {msg.text && (
-        <div className={`p-3.5 rounded-xl text-xs font-semibold flex items-center ${msg.type === 'success' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}`}>
+        <div className={`p-3.5 rounded-xl text-xs font-semibold flex items-center ${msg.type === 'success' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30'}`}>
           {msg.type === 'success' ? <Check className="w-4 h-4 mr-2" /> : <AlertCircle className="w-4 h-4 mr-2" />}
           {msg.text}
         </div>
       )}
 
       {/* Select Subject Dropdown Selector */}
-      <div className="tech-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <label className="text-xs font-mono font-bold text-[#F8FAFC]">Select Academic Subject:</label>
+      <div className="tech-card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#0F172A] border-slate-200 dark:border-[#1E293B]">
+        <label className="text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC]">Select Academic Subject:</label>
         <select
           value={selectedSubjectId}
           onChange={(e) => {
@@ -174,10 +174,10 @@ export default function AdminUnits() {
             setForm((prev) => ({ ...prev, subjectId: e.target.value }));
             setEditingId(null);
           }}
-          className="px-3.5 py-2 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-mono font-semibold flex-grow max-w-xl"
+          className="px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-mono font-semibold flex-grow max-w-xl cursor-pointer"
         >
           {subjects.map((s) => (
-            <option key={s._id} value={s._id} className="bg-[#0B0F19] text-[#F8FAFC]">
+            <option key={s._id} value={s._id} className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
               {s.name} {s.code ? `(${s.code})` : ''}
             </option>
           ))}
@@ -185,16 +185,16 @@ export default function AdminUnits() {
       </div>
 
       {/* Unit Form (Create & Edit) */}
-      <div className="tech-card p-6 space-y-4">
-        <h3 className="text-sm font-bold text-[#F8FAFC] flex items-center">
-          {editingId ? <Edit3 className="w-4 h-4 mr-2 text-[#38BDF8]" /> : <Plus className="w-4 h-4 mr-2 text-[#F59E0B]" />}
+      <div className="tech-card p-6 space-y-4 bg-white dark:bg-[#0F172A] border-slate-200 dark:border-[#1E293B]">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center">
+          {editingId ? <Edit3 className="w-4 h-4 mr-2 text-blue-600 dark:text-[#38BDF8]" /> : <Plus className="w-4 h-4 mr-2 text-amber-500" />}
           {editingId ? 'Edit Unit Details' : 'Create Unit for Selected Subject'}
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Unit Number *</label>
+              <label className="block text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC] mb-1">Unit Number *</label>
               <input
                 type="number"
                 min="1"
@@ -202,38 +202,38 @@ export default function AdminUnits() {
                 value={form.unitNumber}
                 onChange={(e) => setForm({ ...form, unitNumber: e.target.value })}
                 required
-                className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-semibold"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Unit Title *</label>
+              <label className="block text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC] mb-1">Unit Title *</label>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="e.g. Process Synchronization & Deadlocks"
                 required
-                className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-semibold"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-mono font-bold text-[#F8FAFC] mb-1">Unit Description</label>
+            <label className="block text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC] mb-1">Unit Description</label>
             <input
               type="text"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Key topics and syllabus outline covered in this unit..."
-              className="w-full px-3.5 py-2.5 text-xs bg-[#070A12] text-[#F8FAFC] border border-[#1E293B] rounded-xl focus:outline-none focus:border-[#38BDF8] font-semibold"
+              className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-semibold"
             />
           </div>
 
           <div className="flex items-center space-x-3 pt-2">
             <button
               type="submit"
-              className="px-6 py-2.5 bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-mono font-bold text-xs rounded-xl shadow-md transition-colors border border-[#38BDF8]/30 cursor-pointer"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-mono font-bold text-xs rounded-xl shadow-md transition-colors border border-blue-500/30 cursor-pointer"
             >
               {editingId ? 'Update Unit' : 'Save Unit'}
             </button>
@@ -241,7 +241,7 @@ export default function AdminUnits() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2.5 bg-[#1E293B] text-[#94A3B8] font-mono text-xs font-bold rounded-xl hover:text-white transition-colors cursor-pointer"
+                className="px-4 py-2.5 bg-slate-100 dark:bg-[#1E293B] text-slate-700 dark:text-[#94A3B8] font-mono text-xs font-bold rounded-xl hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer border border-slate-200 dark:border-transparent"
               >
                 Cancel
               </button>
@@ -251,46 +251,48 @@ export default function AdminUnits() {
       </div>
 
       {/* Units List with Reordering & Resource Count */}
-      <div className="tech-card overflow-hidden">
-        <div className="p-4 bg-[#0F172A] border-b border-[#1E293B] font-mono font-bold text-xs flex items-center justify-between">
-          <span className="flex items-center"><Layers className="w-4 h-4 mr-2 text-[#38BDF8]" /> Units for Selected Subject ({units.length})</span>
+      <div className="tech-card overflow-hidden bg-white dark:bg-[#0F172A] border-slate-200 dark:border-[#1E293B]">
+        <div className="p-4 bg-slate-50 dark:bg-[#0F172A] border-b border-slate-200 dark:border-[#1E293B] font-mono font-bold text-xs flex items-center justify-between">
+          <span className="flex items-center text-slate-900 dark:text-[#F8FAFC]">
+            <Layers className="w-4 h-4 mr-2 text-blue-600 dark:text-[#38BDF8]" /> Units for Selected Subject ({units.length})
+          </span>
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-xs text-[#94A3B8] font-mono">Loading units...</div>
+          <div className="p-8 text-center text-xs text-slate-500 dark:text-[#94A3B8] font-mono">Loading units...</div>
         ) : units.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#94A3B8] font-mono">No units found for this subject. Create unit above.</div>
+          <div className="p-8 text-center text-xs text-slate-500 dark:text-[#94A3B8] font-mono">No units found for this subject. Create unit above.</div>
         ) : (
-          <div className="divide-y divide-[#1E293B]">
+          <div className="divide-y divide-slate-200 dark:divide-[#1E293B]">
             {units.map((u, idx) => (
-              <div key={u._id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#0F172A] text-xs transition-colors">
+              <div key={u._id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 text-xs transition-colors">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="tech-badge tech-badge-blue">
                       Unit {u.unitNumber}
                     </span>
-                    <span className="font-bold text-[#F8FAFC] text-sm">{u.title}</span>
+                    <span className="font-bold text-slate-900 dark:text-[#F8FAFC] text-sm">{u.title}</span>
                     <span className="tech-badge tech-badge-purple">
                       <FileText className="w-3 h-3 mr-1" /> {unitResourcesCount[u._id] || 0} Resources
                     </span>
                   </div>
-                  {u.description && <p className="text-[#94A3B8] text-xs mt-1">{u.description}</p>}
+                  {u.description && <p className="text-slate-500 dark:text-[#94A3B8] text-xs mt-1">{u.description}</p>}
                 </div>
 
                 <div className="flex items-center space-x-2 self-start sm:self-auto">
                   {/* Reorder Buttons */}
-                  <div className="flex items-center space-x-1 border-r border-[#1E293B] pr-2 mr-1">
+                  <div className="flex items-center space-x-1 border-r border-slate-200 dark:border-[#1E293B] pr-2 mr-1">
                     <button
                       onClick={() => handleReorder(u._id, u.unitNumber - 1)}
                       disabled={u.unitNumber <= 1}
-                      className="p-1.5 text-[#94A3B8] hover:text-[#38BDF8] disabled:opacity-30 rounded hover:bg-[#1E293B]"
+                      className="p-1.5 text-slate-500 dark:text-[#94A3B8] hover:text-blue-600 dark:hover:text-[#38BDF8] disabled:opacity-30 rounded hover:bg-slate-100 dark:hover:bg-[#1E293B]"
                       title="Move Up (Decrease Unit Number)"
                     >
                       <ArrowUp className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleReorder(u._id, u.unitNumber + 1)}
-                      className="p-1.5 text-[#94A3B8] hover:text-[#38BDF8] rounded hover:bg-[#1E293B]"
+                      className="p-1.5 text-slate-500 dark:text-[#94A3B8] hover:text-blue-600 dark:hover:text-[#38BDF8] rounded hover:bg-slate-100 dark:hover:bg-[#1E293B]"
                       title="Move Down (Increase Unit Number)"
                     >
                       <ArrowDown className="w-3.5 h-3.5" />
@@ -299,7 +301,7 @@ export default function AdminUnits() {
 
                   <Link
                     to={`/admin/resources?subjectId=${selectedSubjectId}`}
-                    className="p-2 text-[#38BDF8] hover:bg-[#1E293B] rounded-lg font-mono text-[11px] font-bold"
+                    className="p-2 text-blue-600 dark:text-[#38BDF8] hover:bg-slate-100 dark:hover:bg-[#1E293B] rounded-lg font-mono text-[11px] font-bold"
                     title="View Resources in this Unit"
                   >
                     Resources →
@@ -307,7 +309,7 @@ export default function AdminUnits() {
 
                   <button
                     onClick={() => startEdit(u)}
-                    className="p-2 text-[#94A3B8] hover:text-[#38BDF8] hover:bg-[#1E293B] rounded-lg transition-colors cursor-pointer"
+                    className="p-2 text-slate-500 dark:text-[#94A3B8] hover:text-blue-600 dark:hover:text-[#38BDF8] hover:bg-slate-100 dark:hover:bg-[#1E293B] rounded-lg transition-colors cursor-pointer"
                     title="Edit Unit"
                   >
                     <Edit3 className="w-4 h-4" />
@@ -315,7 +317,7 @@ export default function AdminUnits() {
 
                   <button
                     onClick={() => handleDelete(u._id)}
-                    className="p-2 text-[#94A3B8] hover:text-[#EF4444] hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                    className="p-2 text-slate-500 dark:text-[#94A3B8] hover:text-rose-600 dark:hover:text-[#EF4444] hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                     title="Delete Unit"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -329,3 +331,4 @@ export default function AdminUnits() {
     </div>
   );
 }
+
