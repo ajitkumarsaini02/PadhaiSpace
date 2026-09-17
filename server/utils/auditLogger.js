@@ -2,7 +2,7 @@ const AdminAuditLog = require('../models/AdminAuditLog');
 
 const logAdminAction = async (adminId, action, targetType = '', targetId = '', metadata = {}, req = null) => {
   try {
-    const ipAddress = req ? (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '') : '';
+    const ipAddress = req && req.headers ? (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '') : '';
     await AdminAuditLog.create({
       adminId,
       action,

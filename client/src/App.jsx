@@ -6,14 +6,15 @@ import Home from './pages/Home';
 import Subjects from './pages/Subjects';
 import SubjectDetail from './pages/SubjectDetail';
 import Notes from './pages/Notes';
+import NotesSource from './pages/NotesSource';
 import PYQs from './pages/PYQs';
 import Resources from './pages/Resources';
 import ResourceDetail from './pages/ResourceDetail';
+import SearchResults from './pages/SearchResults';
 import PDFReader from './pages/PDFReader';
 import Bookmarks from './pages/Bookmarks';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import MyPurchases from './pages/MyPurchases';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import About from './pages/About';
@@ -29,8 +30,6 @@ import AdminUnits from './pages/admin/AdminUnits';
 import AdminResources from './pages/admin/AdminResources';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminActivityLog from './pages/admin/AdminActivityLog';
-import AdminPayments from './pages/admin/AdminPayments';
-import AdminAccess from './pages/admin/AdminAccess';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
 import AdminSearch from './pages/admin/AdminSearch';
 
@@ -57,11 +56,21 @@ export default function App() {
           <Route path="/subjects" element={<Subjects />} />
           <Route path="/subjects/:id" element={<SubjectDetail />} />
           <Route path="/notes" element={<Notes />} />
+          <Route path="/notes/source/:sourceSlug" element={<NotesSource />} />
           <Route path="/pyqs" element={<PYQs />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/resources/:id" element={<ResourceDetail />} />
+          <Route path="/search" element={<SearchResults />} />
 
           {/* Student Protected Routes */}
+          <Route
+            path="/resources/:id/view"
+            element={
+              <ProtectedRoute>
+                <PDFReader />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/resources/:id/read"
             element={
@@ -91,14 +100,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-purchases"
-            element={
-              <ProtectedRoute>
-                <MyPurchases />
               </ProtectedRoute>
             }
           />
@@ -156,7 +157,7 @@ export default function App() {
             }
           />
           <Route
-            path="/admin/activity"
+            path="/admin/resource-activities"
             element={
               <AdminRoute>
                 <AdminActivityLog />
@@ -164,18 +165,10 @@ export default function App() {
             }
           />
           <Route
-            path="/admin/payments"
+            path="/admin/activity"
             element={
               <AdminRoute>
-                <AdminPayments />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/access"
-            element={
-              <AdminRoute>
-                <AdminAccess />
+                <AdminActivityLog />
               </AdminRoute>
             }
           />

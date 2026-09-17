@@ -16,7 +16,7 @@ const connectDB = async () => {
     console.error('❌ MONGODB_URI IS MISSING IN ENVIRONMENT VARIABLES!');
     console.error('👉 Please go to Render Dashboard -> Environment -> Add:');
     console.error('   Key: MONGODB_URI');
-    console.error('   Value: mongodb+srv://<user>:<password>@cluster...mongodb.net/padhaispace?retryWrites=true&w=majority');
+    console.error('   Value: mongodb://127.0.0.1:27017/padhaiSpace');
     console.error('===========================================================');
   }
 

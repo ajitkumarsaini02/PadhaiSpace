@@ -6,8 +6,6 @@ exports.getBookmarks = async (req, res) => {
     const user = await User.findById(req.user._id).populate({
       path: 'bookmarks',
       populate: [
-        { path: 'branchId', select: 'name code' },
-        { path: 'semesterId', select: 'number' },
         { path: 'subjectId', select: 'name code' },
         { path: 'unitId', select: 'unitNumber title' },
       ],

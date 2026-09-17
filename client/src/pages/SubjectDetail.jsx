@@ -8,9 +8,8 @@ import { subjectService, unitService, resourceService } from '../services/api';
 import {
   Layers,
   ArrowLeft,
-  Award,
-  CheckCircle,
-  BookOpen,
+  ArrowRight,
+  FileText,
 } from 'lucide-react';
 
 export default function SubjectDetail() {
@@ -19,8 +18,8 @@ export default function SubjectDetail() {
   const [subject, setSubject] = useState(null);
   const [units, setUnits] = useState([]);
   const [resources, setResources] = useState([]);
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'notes', 'pdf', 'pyq', 'syllabus-exam'
   const [selectedUnit, setSelectedUnit] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(true);
   const [activePDF, setActivePDF] = useState(null);
 
@@ -58,181 +57,169 @@ export default function SubjectDetail() {
   if (!subject) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-xl font-bold text-slate-800">Subject Not Found</h2>
-        <Link to="/subjects" className="text-brand-600 underline mt-2 inline-block">
+        <h2 className="text-xl font-bold text-slate-900 dark:text-[#F8FAFC]">Subject Not Found</h2>
+        <Link to="/subjects" className="text-[#4F46E5] dark:text-[#38BDF8] underline mt-2 inline-block font-mono text-xs">
           Return to Subjects
         </Link>
       </div>
     );
   }
 
-  // Filter resources based on tab & unit
   const filteredResources = resources.filter((res) => {
-    if (selectedUnit && res.unitId?._id !== selectedUnit) return false;
+    if (selectedUnit && res.unitId?._id !== selectedUnit && res.unitId !== selectedUnit) return false;
     if (activeTab === 'notes') return res.type === 'notes';
-    if (activeTab === 'pdf') return res.type === 'pdf';
+    if (activeTab === 'pdf') return res.type === 'pdf' || res.type === 'unit-pdf';
     if (activeTab === 'pyq') return res.type === 'pyq';
-    if (activeTab === 'syllabus-exam') return res.type === 'syllabus' || res.type === 'exam-resource';
     return true;
   });
 
-  const offeredBranches = subject.offerings && subject.offerings.length > 0
-    ? Array.from(new Set(subject.offerings.map(o => o.branchId?.code || o.branchId?.name).filter(Boolean)))
-    : (subject.branchIds && subject.branchIds.length > 0
-        ? subject.branchIds.map(b => b.code || b.name)
-        : [subject.branchId?.code || subject.branchId?.name].filter(Boolean));
-
-  const offeredSemesters = subject.offerings && subject.offerings.length > 0
-    ? Array.from(new Set(subject.offerings.map(o => o.semesterId?.number || o.semesterNumber).filter(Boolean))).sort((a, b) => a - b)
-    : [subject.semesterNumber || subject.semesterId?.number].filter(Boolean);
-
-  const subjectTypeDisplay = subject.subjectType || subject.type || 'theory';
+  // Calculate resources count per unit
+  const unitResourceCounts = {};
+  resources.forEach((r) => {
+    const uId = r.unitId?._id || r.unitId;
+    if (uId) {
+      unitResourceCounts[uId] = (unitResourceCounts[uId] || 0) + 1;
+    }
+  });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Back Button */}
-      <Link
-        to="/subjects"
-        className="inline-flex items-center text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] hover:text-[#4F8FEF] transition-colors"
-      >
-        <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back to Subjects
-      </Link>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-slate-900 dark:text-[#F8FAFC]">
+      {/* Breadcrumb */}
+      <nav className="flex items-center space-x-2 text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
+        <Link to="/" className="hover:text-[#4F46E5] dark:hover:text-[#38BDF8]">Home</Link>
+        <span>/</span>
+        <Link to="/subjects" className="hover:text-[#4F46E5] dark:hover:text-[#38BDF8]">Subjects</Link>
+        <span>/</span>
+        <span className="text-slate-900 dark:text-[#F8FAFC] font-bold">{subject.name} {subject.code ? `(${subject.code})` : ''}</span>
+      </nav>
 
-      {/* Header Banner - Dark Navy #0B1020 */}
-      <div className="bg-[#0B1020] text-[#F8FAFC] border border-[#252D42] rounded-xl p-6 sm:p-8 shadow-subtle">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2">
-              {subject.code && (
-                <span className="px-2.5 py-1 rounded bg-[#161D31] text-[#F8FAFC] text-xs font-bold uppercase tracking-wider border border-[#252D42]">
-                  {subject.code}
-                </span>
-              )}
-              {offeredBranches.length > 0 && (
-                <span className="px-2.5 py-1 rounded bg-[#161D31] text-[#9AA6BC] text-xs font-semibold border border-[#252D42]">
-                  Branches: {offeredBranches.join(', ')}
-                </span>
-              )}
-              {offeredSemesters.length > 0 && (
-                <span className="px-2.5 py-1 rounded bg-[#161D31] text-[#9AA6BC] text-xs font-semibold border border-[#252D42]">
-                  {offeredSemesters.length === 1 ? `Semester ${offeredSemesters[0]}` : `Semesters: ${offeredSemesters.join(', ')}`}
-                </span>
-              )}
-              <span className="px-2.5 py-1 rounded bg-[#4F8FEF]/10 text-[#6EA8FF] border border-[#6EA8FF]/30 text-xs font-bold capitalize">
-                {subjectTypeDisplay} Course
+      {/* Header Banner */}
+      <div className="tech-card p-6 sm:p-8 tech-grid-pattern relative overflow-hidden">
+        <div className="space-y-3 max-w-3xl">
+          <div className="flex flex-wrap items-center gap-2">
+            {subject.code && (
+              <span className="tech-badge tech-badge-blue">
+                {subject.code}
               </span>
-              {subject.credits && (
-                <span className="px-2.5 py-1 rounded bg-[#161D31] text-[#F2A93B] text-xs font-semibold flex items-center border border-[#252D42]">
-                  <Award className="w-3 h-3 mr-1 text-[#F2A93B]" /> {subject.credits} Credits
-                </span>
-              )}
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-bold text-white">
-              {subject.name}
-            </h1>
-
-            <p className="text-xs sm:text-sm text-[#9AA6BC] leading-relaxed">
-              {subject.description || 'Access official B.Tech semester notes, unit PDFs, previous year question papers, syllabi, and revision materials.'}
-            </p>
-
-            <div className="inline-flex items-center space-x-2 bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30 px-3 py-1.5 rounded-lg text-xs font-bold">
-              <CheckCircle className="w-4 h-4 text-[#36B37E]" />
-              <span>✓ 100% Free Access — All {units.length || 5} Units & Resources Available</span>
-            </div>
+            )}
+            <span className="tech-badge tech-badge-cyan">
+              {subject.unitCount || units.length} Units
+            </span>
+            <span className="tech-badge tech-badge-purple">
+              {subject.resourceCount || resources.length} Resources
+            </span>
           </div>
-        </div>
-      </div>
 
-      {/* Free Access Banner */}
-      <div className="bg-[#36B37E]/10 border border-[#36B37E]/30 rounded-xl p-4 flex items-center space-x-3 text-[#36B37E]">
-        <CheckCircle className="w-5 h-5 text-[#36B37E] flex-shrink-0" />
-        <p className="text-xs sm:text-sm font-semibold">
-          ✓ Free Academic Access — Full access to all {units.length || 5} units and PDF study materials for all students.
-        </p>
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-[#F8FAFC]">
+            {subject.name}
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] leading-relaxed">
+            {subject.description || 'Access official engineering syllabus units, notes, unit PDFs, previous year question papers, and study resources.'}
+          </p>
+        </div>
       </div>
 
       {/* Units Section */}
       {units.length > 0 && (
-        <div className="bg-white dark:bg-[#111729] rounded-xl p-5 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-[#172033] dark:text-[#F8FAFC] flex items-center">
-              <Layers className="w-4 h-4 mr-2 text-[#4F8FEF]" /> Syllabus Units ({units.length})
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1E293B] pb-3">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-[#F8FAFC] flex items-center font-mono">
+              <Layers className="w-4 h-4 mr-2 text-[#4F46E5] dark:text-[#38BDF8]" /> Syllabus Units ({units.length})
             </h3>
-            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-[#36B37E]/10 text-[#36B37E] border border-[#36B37E]/30 flex items-center">
-              <CheckCircle className="w-3.5 h-3.5 mr-1" /> All {units.length} Units Free
-            </span>
+            {selectedUnit && (
+              <button
+                onClick={() => setSelectedUnit('')}
+                className="text-xs font-mono text-[#4F46E5] dark:text-[#38BDF8] hover:underline cursor-pointer"
+              >
+                Clear Unit Filter
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {units.map((u) => {
+              const resCount = unitResourceCounts[u._id] || 0;
+              const isSelected = selectedUnit === u._id;
+              return (
+                <div
+                  key={u._id}
+                  onClick={() => setSelectedUnit(isSelected ? '' : u._id)}
+                  className={`tech-card p-4 cursor-pointer transition-all ${
+                    isSelected ? 'border-[#4F46E5] dark:border-[#38BDF8] bg-indigo-50/50 dark:bg-[#0F172A]' : 'hover:border-[#4F46E5]/50 dark:hover:border-[#38BDF8]/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="tech-badge tech-badge-cyan">
+                      Unit {u.unitNumber}
+                    </span>
+                    <span className="text-[11px] font-mono text-slate-500 dark:text-[#94A3B8] flex items-center">
+                      <FileText className="w-3 h-3 mr-1 text-[#2563EB] dark:text-[#C084FC]" /> {resCount} Resources
+                    </span>
+                  </div>
+
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-[#F8FAFC] mb-1 line-clamp-1">
+                    {u.title}
+                  </h4>
+
+                  {u.description && (
+                    <p className="text-xs text-slate-600 dark:text-[#94A3B8] line-clamp-2 leading-relaxed mb-3">
+                      {u.description}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-end pt-2 border-t border-slate-100 dark:border-[#1E293B]">
+                    <span className="text-xs font-mono font-bold text-[#4F46E5] dark:text-[#38BDF8] flex items-center">
+                      {isSelected ? 'Selected' : 'Open'} <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Category Tabs & Resources */}
+      <div className="space-y-6 pt-4">
+        <div className="border-b border-slate-200 dark:border-[#1E293B] flex items-center space-x-2 overflow-x-auto pb-1 text-xs font-mono font-bold">
+          {[
+            { id: 'all', label: 'All Resources' },
+            { id: 'notes', label: 'Study Notes' },
+            { id: 'pdf', label: 'Unit PDFs' },
+            { id: 'pyq', label: 'PYQs' },
+          ].map((tab) => (
             <button
-              onClick={() => setSelectedUnit('')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                selectedUnit === ''
-                  ? 'bg-[#4F8FEF] text-white shadow-subtle'
-                  : 'bg-[#F5F7FB] dark:bg-[#161D31] text-[#64748B] dark:text-[#9AA6BC] hover:text-[#172033] dark:hover:text-white border border-[#DCE2EC] dark:border-[#252D42]'
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-2 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? 'border-[#4F46E5] text-[#4F46E5] dark:border-[#38BDF8] dark:text-[#38BDF8]'
+                  : 'border-transparent text-slate-600 dark:text-[#94A3B8] hover:text-slate-900 dark:hover:text-[#F8FAFC]'
               }`}
             >
-              All Units
+              {tab.label}
             </button>
-            {units.map((u) => (
-              <button
-                key={u._id}
-                onClick={() => setSelectedUnit(u._id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center space-x-1.5 ${
-                  selectedUnit === u._id
-                    ? 'bg-[#4F8FEF] text-white shadow-subtle'
-                    : 'bg-[#F5F7FB] dark:bg-[#161D31] text-[#64748B] dark:text-[#9AA6BC] hover:text-[#172033] dark:hover:text-white border border-[#DCE2EC] dark:border-[#252D42]'
-                }`}
-              >
-                <CheckCircle className="w-3 h-3 text-[#36B37E]" />
-                <span>Unit {u.unitNumber}: {u.title}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Category Tabs */}
-      <div className="border-b border-[#DCE2EC] dark:border-[#252D42] flex items-center space-x-2 sm:space-x-4 overflow-x-auto pb-1 text-xs sm:text-sm font-medium">
-        {[
-          { id: 'all', label: 'All Resources' },
-          { id: 'notes', label: 'Semester Notes' },
-          { id: 'pdf', label: 'Unit PDFs' },
-          { id: 'pyq', label: 'PYQs (Past Papers)' },
-          { id: 'syllabus-exam', label: 'Syllabus & Exam Resources' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`py-2 px-3 border-b-2 font-semibold whitespace-nowrap transition-colors ${
-              activeTab === tab.id
-                ? 'border-[#4F8FEF] text-[#4F8FEF]'
-                : 'border-transparent text-[#64748B] dark:text-[#9AA6BC] hover:text-[#172033] dark:hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Resources Grid */}
-      {filteredResources.length === 0 ? (
-        <EmptyState
-          title="No resources available in this category"
-          message="Select another category tab or unit to find academic materials."
-        />
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredResources.map((res) => (
-            <ResourceCard
-              key={res._id}
-              resource={res}
-              onOpenPDF={(r) => setActivePDF(r)}
-            />
           ))}
         </div>
-      )}
+
+        {filteredResources.length === 0 ? (
+          <EmptyState
+            title="No resources found"
+            message="Select another unit or category tab to view study materials."
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredResources.map((res) => (
+              <ResourceCard
+                key={res._id}
+                resource={res}
+                onOpenPDF={(r) => setActivePDF(r)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* PDF Modal */}
       {activePDF && (

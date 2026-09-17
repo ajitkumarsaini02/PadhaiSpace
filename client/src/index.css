@@ -2,60 +2,152 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary: #0F172A;
+  --accent: #4F46E5;
+  --blue: #2563EB;
+
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-secondary: #F1F5F9;
+
+  --text: #111827;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  --border: #E2E8F0;
+
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --error: #DC2626;
+}
+
+.dark {
+  --primary: #1E293B;
+  --accent: #6366F1;
+  --blue: #3B82F6;
+
+  --background: #020617;
+  --surface: #0F172A;
+  --surface-secondary: #111827;
+
+  --text: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+
+  --border: #1E293B;
+
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+}
+
 @layer base {
   body {
-    background-color: #F5F7FB;
-    color: #172033;
-    @apply font-sans antialiased selection:bg-[#4F8FEF] selection:text-white transition-colors duration-150;
-  }
-
-  .dark body {
-    background-color: #0B1020;
-    color: #F8FAFC;
+    background-color: var(--background);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+    @apply antialiased selection:bg-[#4F46E5] selection:text-white dark:selection:bg-[#6366F1];
   }
 }
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F5F7FB;
-}
-.dark ::-webkit-scrollbar-track {
-  background: #0B1020;
+  background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: #DCE2EC;
-  border-radius: 4px;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #252D42;
+  background: var(--border);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748B;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #9AA6BC;
+  background: var(--accent);
 }
 
-/* Clean Navbar & Surface styling */
-.glass-nav {
-  background-color: #FFFFFF;
-  border-bottom: 1px solid #DCE2EC;
+/* Technical Card & Panel Utilities */
+.tech-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
 }
-.dark .glass-nav {
-  background-color: #0B1020;
-  border-bottom: 1px solid #252D42;
+.tech-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 20px -4px rgba(79, 70, 229, 0.12);
+}
+.dark .tech-card:hover {
+  box-shadow: 0 4px 20px -4px rgba(99, 102, 241, 0.2);
 }
 
-.glass-panel {
-  background-color: #FFFFFF;
-  border: 1px solid #DCE2EC;
+.tech-badge {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  transition: all 150ms ease;
 }
-.dark .glass-panel {
-  background-color: #111729;
-  border: 1px solid #252D42;
+
+/* Light & Dark Badge Variants */
+.tech-badge-blue {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+.dark .tech-badge-blue {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.tech-badge-cyan {
+  background-color: #F0F9FF;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+}
+.dark .tech-badge-cyan {
+  background-color: rgba(56, 189, 248, 0.12);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.tech-badge-purple {
+  background-color: #F5F3FF;
+  color: #6D28D9;
+  border: 1px solid #DDD6FE;
+}
+.dark .tech-badge-purple {
+  background-color: rgba(192, 132, 252, 0.12);
+  color: #C084FC;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+.tech-badge-green {
+  background-color: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+.dark .tech-badge-green {
+  background-color: rgba(34, 197, 94, 0.12);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* Banner Grid Overlay */
+.tech-grid-pattern {
+  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.15) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(148, 163, 184, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.dark .tech-grid-pattern {
+  background-image: linear-gradient(to right, rgba(30, 41, 59, 0.4) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(30, 41, 59, 0.4) 1px, transparent 1px);
+  background-size: 24px 24px;
 }

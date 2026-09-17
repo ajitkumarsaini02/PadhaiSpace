@@ -1,9 +1,6 @@
 const Resource = require('../models/Resource');
 const Subject = require('../models/Subject');
 const Unit = require('../models/Unit');
-const Semester = require('../models/Semester');
-const SubjectOffering = require('../models/SubjectOffering');
-const SubjectAccess = require('../models/SubjectAccess');
 const { logAdminAction } = require('../utils/auditLogger');
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -27,14 +24,172 @@ const deleteFileFromDisk = (fileUrl) => {
   }
 };
 
+// @route GET /api/resources/meta/sources
+exports.getSources = async (req, res) => {
+  try {
+    const { type } = req.query;
+    const baseFilter = {};
+    if (type) {
+      const lowerType = type.toLowerCase();
+      if (lowerType === 'notes' || lowerType === 'pdf' || lowerType === 'unit-pdf') {
+        baseFilter.type = { $in: ['notes', 'pdf', 'unit-pdf', 'Unit PDF'] };
+      } else {
+        baseFilter.type = type;
+      }
+    }
+
+    const gatewayCount = await Resource.countDocuments({
+      ...baseFilter,
+      source: { $regex: '^gateway classes', $options: 'i' },
+    });
+
+    const edushineCount = await Resource.countDocuments({
+      ...baseFilter,
+      source: { $regex: '^edushine classes', $options: 'i' },
+    });
+
+    const multiAtomCount = await Resource.countDocuments({
+      ...baseFilter,
+      source: { $regex: '^multi atom', $options: 'i' },
+    });
+
+    const totalCount = await Resource.countDocuments(baseFilter);
+    const topThreeSum = gatewayCount + edushineCount + multiAtomCount;
+    const otherCount = Math.max(0, totalCount - topThreeSum);
+
+    res.json({
+      success: true,
+      data: [
+        { id: 'gateway-classes', name: 'Gateway Classes', count: gatewayCount },
+        { id: 'edushine-classes', name: 'EduShine Classes', count: edushineCount },
+        { id: 'multi-atom', name: 'Multi Atom', count: multiAtomCount },
+        { id: 'other-notes', name: 'Other Notes', count: otherCount },
+      ],
+    });
+  } catch (error) {
+    console.error('Error in getSources:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @route GET /api/resources/meta/academic-years
+exports.getAcademicYears = async (req, res) => {
+  try {
+    const { source, type } = req.query;
+    const filter = {};
+
+    if (type) {
+      const lowerType = type.toLowerCase();
+      if (lowerType === 'notes' || lowerType === 'pdf' || lowerType === 'unit-pdf') {
+        filter.type = { $in: ['notes', 'pdf', 'unit-pdf', 'Unit PDF'] };
+      } else {
+        filter.type = type;
+      }
+    }
+
+    if (source && source.trim() && source !== 'all') {
+      const cleanSource = source.trim().toLowerCase();
+      if (cleanSource === 'gateway-classes' || cleanSource === 'gateway classes') {
+        filter.source = { $regex: '^gateway classes', $options: 'i' };
+      } else if (cleanSource === 'edushine-classes' || cleanSource === 'edushine classes') {
+        filter.source = { $regex: '^edushine classes', $options: 'i' };
+      } else if (cleanSource === 'multi-atom' || cleanSource === 'multi atom') {
+        filter.source = { $regex: '^multi atom', $options: 'i' };
+      } else if (cleanSource === 'other-notes' || cleanSource === 'other') {
+        filter.$or = [
+          { source: 'Other Notes' },
+          { source: '' },
+          { source: { $exists: false } },
+          { source: { $not: { $regex: '^(gateway classes|edushine classes|multi atom)', $options: 'i' } } },
+        ];
+      } else {
+        filter.source = { $regex: source.trim(), $options: 'i' };
+      }
+    }
+
+    const distinctYears = await Resource.distinct('academicYear', filter);
+
+    const canonicalOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+    const validYears = distinctYears
+      .filter((y) => typeof y === 'string' && y.trim() !== '')
+      .sort((a, b) => {
+        const idxA = canonicalOrder.indexOf(a);
+        const idxB = canonicalOrder.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+      });
+
+    res.json({ success: true, data: validYears });
+  } catch (error) {
+    console.error('Error in getAcademicYears:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @route GET /api/resources/meta/paper-years
+exports.getPaperYears = async (req, res) => {
+  try {
+    const { academicYear, subjectId, source, type } = req.query;
+    const filter = { type: (type || 'pyq').toLowerCase() };
+
+    if (academicYear && academicYear !== 'all') {
+      filter.academicYear = academicYear;
+    }
+    if (subjectId && subjectId !== 'all' && mongoose.Types.ObjectId.isValid(subjectId)) {
+      filter.subjectId = subjectId;
+    }
+    if (source && source.trim() && source !== 'all') {
+      filter.source = { $regex: source.trim(), $options: 'i' };
+    }
+
+    const distinctYears = await Resource.distinct('paperYear', filter);
+    const validYears = distinctYears
+      .filter((y) => typeof y === 'number' && !isNaN(y))
+      .sort((a, b) => b - a);
+
+    res.json({ success: true, data: validYears });
+  } catch (error) {
+    console.error('Error in getPaperYears:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @route GET /api/resources/meta/pyq-subjects
+exports.getPYQSubjects = async (req, res) => {
+  try {
+    const { academicYear, paperYear, source } = req.query;
+    const filter = { type: 'pyq' };
+
+    if (academicYear && academicYear !== 'all') {
+      filter.academicYear = academicYear;
+    }
+    if (paperYear && paperYear !== 'all' && !isNaN(Number(paperYear))) {
+      filter.paperYear = Number(paperYear);
+    }
+    if (source && source.trim() && source !== 'all') {
+      filter.source = { $regex: source.trim(), $options: 'i' };
+    }
+
+    const distinctSubjectIds = await Resource.distinct('subjectId', filter);
+    const validSubjectIds = distinctSubjectIds.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+    const subjects = await Subject.find({ _id: { $in: validSubjectIds } }).select('name code description thumbnail');
+    res.json({ success: true, data: subjects });
+  } catch (error) {
+    console.error('Error in getPYQSubjects:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @route GET /api/resources
 exports.getResources = async (req, res) => {
   try {
-    const { branchId, semesterId, subjectId, unitId, type, q, sort, limit } = req.query;
+    const { subjectId, unitId, type, q, sort, limit, page, academicYear, paperYear, year, source } = req.query;
     const andConditions = [];
 
     // 1. TYPE FILTERING & NORMALIZATION
-    // Study Notes category includes 'notes', 'pdf', 'unit-pdf', 'Unit PDF'
     if (type) {
       const lowerType = type.toLowerCase();
       if (lowerType === 'notes' || lowerType === 'pdf' || lowerType === 'unit-pdf') {
@@ -44,93 +199,55 @@ exports.getResources = async (req, res) => {
       }
     }
 
-    // 2. BRANCH FILTERING
-    // Include resources matching branchId OR common resources (branchId = null / undefined)
-    if (branchId && branchId !== 'all' && mongoose.Types.ObjectId.isValid(branchId)) {
-      andConditions.push({
-        $or: [
-          { branchId: branchId },
-          { branchId: null },
-          { branchId: { $exists: false } },
-        ],
-      });
-    }
-
-    // 3. SEMESTER FILTERING
-    // Handles semesterId as an ObjectId or as a number (e.g. '5' or 5)
-    if (semesterId && semesterId !== 'all') {
-      if (mongoose.Types.ObjectId.isValid(semesterId)) {
-        // Direct ObjectId matching
-        const semesterDoc = await Semester.findById(semesterId);
-        const semNumber = semesterDoc ? semesterDoc.number : null;
-
-        let matchingSemObjectIds = [semesterId];
-        let matchingSubjectIds = [];
-
-        if (semNumber) {
-          const semDocs = await Semester.find({ number: semNumber });
-          matchingSemObjectIds = semDocs.map((s) => s._id);
-
-          const offerings = await SubjectOffering.find({ semesterNumber: semNumber });
-          const offeringSubjIds = offerings.map((o) => o.subjectId);
-
-          const subjects = await Subject.find({
-            $or: [
-              { semesterNumber: semNumber },
-              { semesterId: { $in: matchingSemObjectIds } },
-              { _id: { $in: offeringSubjIds } },
-            ],
-          });
-          matchingSubjectIds = subjects.map((s) => s._id);
-        }
-
-        andConditions.push({
-          $or: [
-            { semesterId: { $in: matchingSemObjectIds } },
-            { subjectId: { $in: matchingSubjectIds } },
-          ],
-        });
-      } else {
-        // Numeric semester number (e.g., '5' or 5)
-        const semNum = Number(semesterId);
-        if (!isNaN(semNum) && semNum >= 1 && semNum <= 8) {
-          const semDocs = await Semester.find({ number: semNum });
-          const matchingSemObjectIds = semDocs.map((s) => s._id);
-
-          const offerings = await SubjectOffering.find({ semesterNumber: semNum });
-          const offeringSubjIds = offerings.map((o) => o.subjectId);
-
-          const subjects = await Subject.find({
-            $or: [
-              { semesterNumber: semNum },
-              { semesterId: { $in: matchingSemObjectIds } },
-              { _id: { $in: offeringSubjIds } },
-            ],
-          });
-          const matchingSubjectIds = subjects.map((s) => s._id);
-
-          andConditions.push({
-            $or: [
-              { semesterId: { $in: matchingSemObjectIds } },
-              { subjectId: { $in: matchingSubjectIds } },
-            ],
-          });
-        }
-      }
-    }
-
-    // 4. SUBJECT FILTERING
-    // Omit subject filter if subjectId === 'all' or empty
+    // 2. SUBJECT FILTERING
     if (subjectId && subjectId !== 'all' && mongoose.Types.ObjectId.isValid(subjectId)) {
       andConditions.push({ subjectId: subjectId });
     }
 
-    // 5. UNIT FILTERING
+    // 3. UNIT FILTERING
     if (unitId && unitId !== 'all' && mongoose.Types.ObjectId.isValid(unitId)) {
       andConditions.push({ unitId: unitId });
     }
 
-    // 6. SEARCH FILTERING (q)
+    // 4. ACADEMIC YEAR FILTERING
+    if (academicYear && academicYear !== 'all') {
+      andConditions.push({ academicYear: academicYear });
+    }
+
+    // 5. PAPER YEAR FILTERING
+    if (paperYear && paperYear !== 'all' && !isNaN(Number(paperYear))) {
+      andConditions.push({ paperYear: Number(paperYear) });
+    }
+
+    // 6. YEAR FILTERING
+    if (year && year !== 'all' && !isNaN(Number(year))) {
+      andConditions.push({ year: Number(year) });
+    }
+
+    // 7. SOURCE FILTERING & SLUG HANDLING
+    if (source && source.trim() && source !== 'all') {
+      const cleanSource = source.trim().toLowerCase();
+      if (cleanSource === 'gateway-classes' || cleanSource === 'gateway classes') {
+        andConditions.push({ source: { $regex: '^gateway classes', $options: 'i' } });
+      } else if (cleanSource === 'edushine-classes' || cleanSource === 'edushine classes') {
+        andConditions.push({ source: { $regex: '^edushine classes', $options: 'i' } });
+      } else if (cleanSource === 'multi-atom' || cleanSource === 'multi atom') {
+        andConditions.push({ source: { $regex: '^multi atom', $options: 'i' } });
+      } else if (cleanSource === 'other-notes' || cleanSource === 'other') {
+        andConditions.push({
+          $or: [
+            { source: 'Other Notes' },
+            { source: '' },
+            { source: { $exists: false } },
+            { source: { $not: { $regex: '^(gateway classes|edushine classes|multi atom)', $options: 'i' } } },
+          ],
+        });
+      } else {
+        andConditions.push({ source: { $regex: source.trim(), $options: 'i' } });
+      }
+    }
+
+    // 8. SEARCH FILTERING (q)
     if (q && q.trim()) {
       const qRegex = { $regex: q.trim(), $options: 'i' };
 
@@ -144,18 +261,23 @@ exports.getResources = async (req, res) => {
           { title: qRegex },
           { description: qRegex },
           { tags: qRegex },
+          { source: qRegex },
           { subjectId: { $in: matchingSubjIds } },
         ],
       });
     }
 
-    // Build final filter query
     const finalFilter = andConditions.length > 0 ? { $and: andConditions } : {};
 
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = parseInt(limit, 10) || 12;
+    const skip = (pageNum - 1) * limitNum;
+
+    const totalCount = await Resource.countDocuments(finalFilter);
+    const totalPages = Math.ceil(totalCount / limitNum) || 1;
+
     let query = Resource.find(finalFilter)
-      .populate('branchId', 'name code')
-      .populate('semesterId', 'number')
-      .populate('subjectId', 'name code price isPaid')
+      .populate('subjectId', 'name code')
       .populate('unitId', 'unitNumber title');
 
     if (sort === 'popular') {
@@ -163,15 +285,21 @@ exports.getResources = async (req, res) => {
     } else if (sort === 'oldest') {
       query = query.sort({ createdAt: 1 });
     } else {
-      query = query.sort({ createdAt: -1 }); // Latest
+      query = query.sort({ createdAt: -1 });
     }
 
     if (limit) {
-      query = query.limit(Number(limit));
+      query = query.skip(skip).limit(limitNum);
     }
 
     const resources = await query;
-    res.json({ success: true, count: resources.length, data: resources });
+    res.json({
+      success: true,
+      count: totalCount,
+      totalPages,
+      currentPage: pageNum,
+      data: resources,
+    });
   } catch (error) {
     console.error('Error in getResources:', error);
     res.status(500).json({ success: false, message: error.message });
@@ -186,9 +314,7 @@ exports.getResourceById = async (req, res) => {
     }
 
     const resource = await Resource.findById(req.params.id)
-      .populate('branchId', 'name code')
-      .populate('semesterId', 'number')
-      .populate('subjectId', 'name code price isPaid')
+      .populate('subjectId', 'name code')
       .populate('unitId', 'unitNumber title');
 
     if (!resource) return res.status(404).json({ success: false, message: 'Resource not found' });
@@ -202,7 +328,7 @@ exports.getResourceById = async (req, res) => {
 // @route POST /api/resources (Admin)
 exports.createResource = async (req, res) => {
   try {
-    const { title, description, type, branchId, semesterId, subjectId, unitId, externalUrl, examYear, examType, tags } = req.body;
+    const { title, description, type, subjectId, unitId, externalUrl, tags, source, academicYear, paperYear, year } = req.body;
 
     if (!title) {
       return res.status(400).json({ success: false, message: 'Resource Title is required' });
@@ -212,7 +338,6 @@ exports.createResource = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Subject is required' });
     }
 
-    // Validate subject existence
     const subject = await Subject.findById(subjectId);
     if (!subject) {
       return res.status(400).json({ success: false, message: 'Invalid Subject selected' });
@@ -231,39 +356,24 @@ exports.createResource = async (req, res) => {
       ? tags 
       : (typeof tags === 'string' ? tags.split(',').map(t => t.trim()).filter(Boolean) : []);
 
-    // Canonical type normalization: 'pdf', 'unit-pdf' -> 'notes'
-    let canonicalType = type || 'notes';
-    if (['pdf', 'unit-pdf', 'Unit PDF'].includes(canonicalType)) {
-      canonicalType = 'notes';
-    }
-
-    // Derive semesterId if omitted
-    let finalSemesterId = semesterId || null;
-    if (!finalSemesterId && subjectId) {
-      const offering = await SubjectOffering.findOne({ subjectId });
-      if (offering && offering.semesterId) {
-        finalSemesterId = offering.semesterId;
-      }
-    }
+    let canonicalType = (type || 'notes').toLowerCase();
 
     const resource = await Resource.create({
       title,
       description: description || '',
       type: canonicalType,
-      branchId: branchId || null,
-      semesterId: finalSemesterId,
       subjectId,
       unitId: unitId || null,
       fileUrl,
       externalUrl: externalUrl || '',
       tags: parsedTags,
-      examYear: examYear ? Number(examYear) : null,
-      examType: examType || '',
+      source: source || '',
+      academicYear: academicYear || '',
+      paperYear: paperYear ? Number(paperYear) : null,
+      year: year ? Number(year) : null,
     });
 
     const populated = await Resource.findById(resource._id)
-      .populate('branchId', 'name code')
-      .populate('semesterId', 'number')
       .populate('subjectId', 'name code')
       .populate('unitId', 'unitNumber title');
 
@@ -291,7 +401,6 @@ exports.updateResource = async (req, res) => {
 
     const updateData = { ...req.body };
 
-    // File Replacement Handling
     if (req.file) {
       deleteFileFromDisk(existingResource.fileUrl);
       updateData.fileUrl = `/uploads/${req.file.filename}`;
@@ -305,9 +414,10 @@ exports.updateResource = async (req, res) => {
       updateData.type = 'notes';
     }
 
+    if (updateData.paperYear) updateData.paperYear = Number(updateData.paperYear);
+    if (updateData.year) updateData.year = Number(updateData.year);
+
     const resource = await Resource.findByIdAndUpdate(req.params.id, updateData, { new: true })
-      .populate('branchId', 'name code')
-      .populate('semesterId', 'number')
       .populate('subjectId', 'name code')
       .populate('unitId', 'unitNumber title');
 
@@ -393,7 +503,7 @@ const fetchRemotePDFBuffer = async (url) => {
   return buffer;
 };
 
-// Helper to construct a 100% standard valid PDF 1.4 binary Buffer dynamically
+// Helper to construct a standard valid PDF binary Buffer
 const createValidPDFBuffer = (titleStr = 'PadhaiSpace Protected Academic Document') => {
   const cleanTitle = (titleStr || 'PadhaiSpace Academic Document').replace(/[()\\]/g, '');
   const contentStream = `BT
@@ -444,7 +554,6 @@ ${xrefStart}
   return Buffer.from(fullPdf, 'utf-8');
 };
 
-// Helper to check if a file on disk is a non-empty, valid PDF file
 const isValidPDFFile = (filePath) => {
   try {
     if (!filePath || !fs.existsSync(filePath)) return false;
@@ -473,7 +582,6 @@ exports.viewProtectedPDF = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Resource not found' });
     }
 
-    // Increment views only on initial request (no Range or Range starting at bytes=0-)
     const rangeHeader = req.headers.range;
     if (!rangeHeader || rangeHeader.startsWith('bytes=0-')) {
       await Resource.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
@@ -487,7 +595,6 @@ exports.viewProtectedPDF = async (req, res) => {
     let pdfBuffer = null;
     let pdfPath = null;
 
-    // 1. Check local file on disk with strict PDF header validation
     if (resource.fileUrl && !resource.fileUrl.startsWith('http')) {
       const safeFilename = path.basename(resource.fileUrl);
       const testPath1 = path.join(protectedDir, safeFilename);
@@ -501,7 +608,6 @@ exports.viewProtectedPDF = async (req, res) => {
       }
     }
 
-    // 2. Check HTTP/HTTPS URL (fileUrl or externalUrl)
     const remoteUrl = (resource.fileUrl && resource.fileUrl.startsWith('http'))
       ? resource.fileUrl
       : (resource.externalUrl && resource.externalUrl.startsWith('http') ? resource.externalUrl : null);
@@ -514,7 +620,6 @@ exports.viewProtectedPDF = async (req, res) => {
       }
     }
 
-    // 3. Fallback: Local disk file if found
     if (pdfPath && !pdfBuffer) {
       const stat = fs.statSync(pdfPath);
       const fileSize = stat.size;
@@ -545,7 +650,6 @@ exports.viewProtectedPDF = async (req, res) => {
       }
     }
 
-    // 4. Fallback: Dynamic valid PDF buffer if file or remote stream not found
     if (!pdfBuffer) {
       pdfBuffer = createValidPDFBuffer(resource.title);
     }

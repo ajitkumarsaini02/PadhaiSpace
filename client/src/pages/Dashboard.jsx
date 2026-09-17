@@ -4,16 +4,14 @@ import { useBookmarks } from '../context/BookmarkContext';
 import ResourceCard from '../components/ResourceCard';
 import PDFViewerModal from '../components/PDFViewerModal';
 import { CardSkeleton } from '../components/SkeletonLoader';
-import { resourceService, subjectService } from '../services/api';
+import { resourceService } from '../services/api';
 import { Link } from 'react-router-dom';
 import {
   GraduationCap,
   BookOpen,
   Bookmark,
   FileText,
-  ArrowRight,
   UserCheck,
-  TrendingUp,
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -46,34 +44,33 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-slate-900 dark:text-[#F8FAFC]">
       {/* Welcome Hero Banner */}
-      <div className="bg-gradient-to-r from-brand-700 via-brand-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="tech-card p-6 sm:p-8 tech-grid-pattern relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
         <div className="space-y-2">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-xs">
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-[#0F172A] text-[#4F46E5] dark:text-[#818CF8] border border-indigo-200 dark:border-[#1E293B] text-xs font-mono font-bold">
             <UserCheck className="w-3.5 h-3.5" />
             <span>Welcome back, {user?.name || 'Student'}</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white">
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-[#F8FAFC]">
             Student Academic Workspace
           </h1>
-          <p className="text-xs sm:text-sm text-brand-100 max-w-xl">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] max-w-xl font-mono">
             {user?.college ? `${user.college} • ` : ''}
-            Branch: <span className="font-bold text-white uppercase">{user?.branch || 'CSE'}</span> • Semester:{' '}
-            <span className="font-bold text-white">Sem {user?.semester || 1}</span>
+            Role: <span className="font-bold text-[#4F46E5] dark:text-[#38BDF8] uppercase">{user?.role || 'Student'}</span>
           </p>
         </div>
 
         <div className="flex items-center space-x-3">
           <Link
             to="/profile"
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-colors border border-white/20"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-[#0B0F19] dark:hover:bg-[#1E293B] text-slate-900 dark:text-[#F8FAFC] text-xs font-mono font-bold rounded-xl transition-colors border border-slate-200 dark:border-[#1E293B]"
           >
             Edit Profile
           </Link>
           <Link
             to="/bookmarks"
-            className="px-4 py-2 bg-white text-brand-700 font-bold text-xs rounded-xl shadow-md transition-transform hover:scale-105"
+            className="px-4 py-2 bg-[#4F46E5] hover:bg-[#4338CA] dark:bg-[#2563EB] dark:hover:bg-[#1D4ED8] text-white font-mono font-bold text-xs rounded-xl shadow-md transition-transform hover:scale-105 border border-indigo-300 dark:border-[#38BDF8]/30"
           >
             My Bookmarks ({bookmarks.length})
           </Link>
@@ -81,33 +78,23 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-white dark:bg-[#111729] rounded-2xl p-5 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="tech-card p-5 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">Current Branch</p>
-            <h3 className="text-xl font-extrabold text-[#172033] dark:text-[#F8FAFC] mt-1">{user?.branch || 'CSE'}</h3>
+            <p className="text-xs font-mono font-bold text-slate-500 dark:text-[#94A3B8] uppercase tracking-wider">Account Status</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-[#F8FAFC] mt-1 capitalize">{user?.role || 'Student'} Access</h3>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-[#EFF5FF] dark:bg-[#161D31] text-[#4F8FEF] flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-[#161D31] text-[#4F46E5] dark:text-[#38BDF8] border border-indigo-200 dark:border-[#38BDF8]/30 flex items-center justify-center font-bold">
             <GraduationCap className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#111729] rounded-2xl p-5 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle flex items-center justify-between">
+        <div className="tech-card p-5 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">Semester</p>
-            <h3 className="text-xl font-extrabold text-[#172033] dark:text-[#F8FAFC] mt-1">Semester {user?.semester || 1}</h3>
+            <p className="text-xs font-mono font-bold text-slate-500 dark:text-[#94A3B8] uppercase tracking-wider">Saved Bookmarks</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-[#F8FAFC] mt-1">{bookmarks.length} Resources</h3>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center font-bold">
-            <BookOpen className="w-6 h-6" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#111729] rounded-2xl p-5 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase tracking-wider">Saved Bookmarks</p>
-            <h3 className="text-xl font-extrabold text-[#172033] dark:text-[#F8FAFC] mt-1">{bookmarks.length} Resources</h3>
-          </div>
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-[#F2A93B] flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-[#6D28D9] dark:text-[#C084FC] border border-purple-200 dark:border-purple-800 flex items-center justify-center font-bold">
             <Bookmark className="w-6 h-6" />
           </div>
         </div>
@@ -117,10 +104,10 @@ export default function Dashboard() {
       {bookmarks.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-[#172033] dark:text-[#F8FAFC] flex items-center">
-              <Bookmark className="w-5 h-5 text-[#F2A93B] fill-[#F2A93B] mr-2" /> Bookmarked Materials
+            <h2 className="text-lg font-black text-slate-900 dark:text-[#F8FAFC] flex items-center">
+              <Bookmark className="w-5 h-5 text-[#6D28D9] dark:text-[#C084FC] fill-current mr-2" /> Bookmarked Materials
             </h2>
-            <Link to="/bookmarks" className="text-xs font-bold text-[#4F8FEF]">
+            <Link to="/bookmarks" className="text-xs font-mono font-bold text-[#4F46E5] dark:text-[#38BDF8]">
               View All →
             </Link>
           </div>
@@ -139,10 +126,10 @@ export default function Dashboard() {
       {/* Recommended Notes */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#172033] dark:text-[#F8FAFC] flex items-center">
-            <BookOpen className="w-5 h-5 text-[#4F8FEF] mr-2" /> Recommended Semester Notes
+          <h2 className="text-lg font-black text-slate-900 dark:text-[#F8FAFC] flex items-center">
+            <BookOpen className="w-5 h-5 text-[#4F46E5] dark:text-[#38BDF8] mr-2" /> Recommended Study Notes
           </h2>
-          <Link to="/notes" className="text-xs font-bold text-[#4F8FEF]">
+          <Link to="/notes" className="text-xs font-mono font-bold text-[#4F46E5] dark:text-[#38BDF8]">
             Browse Notes →
           </Link>
         </div>
@@ -165,10 +152,10 @@ export default function Dashboard() {
       {/* Recommended PYQs */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#172033] dark:text-[#F8FAFC] flex items-center">
-            <FileText className="w-5 h-5 text-[#F2A93B] mr-2" /> Exam Question Papers (PYQs)
+          <h2 className="text-lg font-black text-slate-900 dark:text-[#F8FAFC] flex items-center">
+            <FileText className="w-5 h-5 text-[#2563EB] dark:text-[#C084FC] mr-2" /> Exam Question Papers (PYQs)
           </h2>
-          <Link to="/pyqs" className="text-xs font-bold text-[#4F8FEF]">
+          <Link to="/pyqs" className="text-xs font-mono font-bold text-[#4F46E5] dark:text-[#38BDF8]">
             Browse PYQs →
           </Link>
         </div>

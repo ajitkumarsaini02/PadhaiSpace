@@ -3,15 +3,32 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
-  const [themeMode, setThemeModeState] = useState(() => {
-    return localStorage.getItem('padhai_theme') || 'system';
+  const [theme, setThemeState] = useState(() => {
+    try {
+      const stored = localStorage.getItem('padhaiSpace-theme') || localStorage.getItem('padhai_theme');
+      if (stored === 'light' || stored === 'dark' || stored === 'system') {
+        return stored;
+      }
+    } catch (e) {
+      console.error('Error reading theme from localStorage:', e);
+    }
+    return 'system';
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState('light');
+  const [resolvedTheme, setResolvedTheme] = useState(() => {
+    if (theme === 'dark') return 'dark';
+    if (theme === 'light') return 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
 
-  const setThemeMode = (mode) => {
-    setThemeModeState(mode);
-    localStorage.setItem('padhai_theme', mode);
+  const setTheme = (mode) => {
+    const validMode = mode === 'light' || mode === 'dark' || mode === 'system' ? mode : 'system';
+    setThemeState(validMode);
+    try {
+      localStorage.setItem('padhaiSpace-theme', validMode);
+    } catch (e) {
+      console.error('Error saving theme to localStorage:', e);
+    }
   };
 
   useEffect(() => {
@@ -19,9 +36,9 @@ export function ThemeProvider({ children }) {
 
     const applyTheme = () => {
       let isDark = false;
-      if (themeMode === 'dark') {
+      if (theme === 'dark') {
         isDark = true;
-      } else if (themeMode === 'light') {
+      } else if (theme === 'light') {
         isDark = false;
       } else {
         // System preference
@@ -39,20 +56,32 @@ export function ThemeProvider({ children }) {
 
     applyTheme();
 
-    // Listen for system preference changes if set to system
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleSystemChange = () => {
-      if (themeMode === 'system') {
+      if (theme === 'system') {
         applyTheme();
       }
     };
 
-    mediaQuery.addEventListener('change', handleSystemChange);
-    return () => mediaQuery.removeEventListener('change', handleSystemChange);
-  }, [themeMode]);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleSystemChange);
+      return () => mediaQuery.removeEventListener('change', handleSystemChange);
+    } else if (mediaQuery.addListener) {
+      mediaQuery.addListener(handleSystemChange);
+      return () => mediaQuery.removeListener(handleSystemChange);
+    }
+  }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ themeMode, setThemeMode, resolvedTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        setTheme,
+        themeMode: theme,
+        setThemeMode: setTheme,
+        resolvedTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

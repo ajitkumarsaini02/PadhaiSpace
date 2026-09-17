@@ -23,13 +23,13 @@ export default function About() {
         </p>
 
         <p className="text-[#64748B] dark:text-[#9AA6BC]">
-          Finding reliable, semester-wise study material, unit-wise notes, and previous year question papers (PYQs) before university examinations is often chaotic. PadhaiSpace brings all academic resources under one roof with a clean, student-friendly interface.
+          Finding reliable, subject-wise study material, unit-wise notes, and previous year question papers (PYQs) before university examinations is often chaotic. PadhaiSpace brings all academic resources under one roof with a clean, student-friendly interface.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
           <div className="p-4 rounded-2xl bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42]">
             <BookOpen className="w-6 h-6 text-[#4F8FEF] mb-2" />
-            <h4 className="font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Semester Notes</h4>
+            <h4 className="font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Unit Notes</h4>
             <p className="text-xs text-[#64748B] dark:text-[#9AA6BC]">Curated lecture notes and unit-wise summaries.</p>
           </div>
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, LogIn, AlertCircle } from 'lucide-react';
+import { GraduationCap, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -23,7 +23,8 @@ export default function Login() {
     try {
       const res = await login(email, password);
       if (res.success) {
-        navigate(from, { replace: true });
+        const dest = location.state?.from?.pathname || (res.data?.role === 'admin' ? '/admin' : '/dashboard');
+        navigate(dest, { replace: true });
       } else {
         setErrorMsg(res.message || 'Invalid credentials');
       }
@@ -36,60 +37,60 @@ export default function Login() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md bg-white dark:bg-[#111729] rounded-xl p-6 sm:p-8 border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-[#0F172A] rounded-2xl p-6 sm:p-8 border border-slate-200 dark:border-[#334155] shadow-xl space-y-6 transition-colors">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-lg bg-[#4F8FEF] text-white flex items-center justify-center mx-auto shadow-subtle">
+          <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-[#4F46E5] dark:text-[#818CF8] flex items-center justify-center mx-auto shadow-sm">
             <GraduationCap className="w-7 h-7" />
           </div>
-          <h2 className="text-2xl font-bold text-[#172033] dark:text-[#F8FAFC]">Welcome Back</h2>
-          <p className="text-xs text-[#64748B] dark:text-[#9AA6BC]">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-[#F8FAFC]">Welcome Back</h2>
+          <p className="text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
             Sign in to access your engineering notes, PYQs, and bookmarks
           </p>
         </div>
 
         {errorMsg && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 text-[#E05252] text-xs font-semibold rounded-lg flex items-center">
+          <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-mono font-bold rounded-xl flex items-center">
             <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" /> {errorMsg}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Email Address</label>
+            <label className="block text-xs font-mono font-bold text-slate-900 dark:text-[#F8FAFC] mb-1">Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="student@example.com"
               required
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none focus:border-[#4F8FEF] text-[#172033] dark:text-[#F8FAFC]"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-[#334155] rounded-xl focus:outline-none focus:border-[#4F46E5] dark:focus:border-[#6366F1] text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8] font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#172033] dark:text-[#F8FAFC] mb-1">Password</label>
+            <label className="block text-xs font-mono font-bold text-slate-900 dark:text-[#F8FAFC] mb-1">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#F5F7FB] dark:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42] rounded-lg focus:outline-none focus:border-[#4F8FEF] text-[#172033] dark:text-[#F8FAFC]"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-[#334155] rounded-xl focus:outline-none focus:border-[#4F46E5] dark:focus:border-[#6366F1] text-slate-900 dark:text-[#F8FAFC] placeholder-slate-400 dark:placeholder-[#94A3B8] font-mono"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#4F8FEF] hover:bg-[#3D7FE5] text-white text-xs font-bold rounded-lg shadow-subtle transition-colors flex items-center justify-center cursor-pointer disabled:opacity-60"
+            className="w-full py-3 bg-[#4F46E5] hover:bg-[#4338CA] dark:bg-[#2563EB] dark:hover:bg-[#1D4ED8] text-white text-xs font-mono font-bold rounded-xl shadow-md transition-colors flex items-center justify-center cursor-pointer disabled:opacity-60 border border-indigo-300 dark:border-[#38BDF8]/30"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="text-center text-xs text-[#64748B] dark:text-[#9AA6BC]">
+        <div className="text-center text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
           Don't have an account?{' '}
-          <Link to="/register" className="font-bold text-[#4F8FEF] hover:underline">
+          <Link to="/register" className="font-bold text-[#4F46E5] dark:text-[#38BDF8] hover:underline">
             Create an Account
           </Link>
         </div>

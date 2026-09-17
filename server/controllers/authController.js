@@ -15,7 +15,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, college, branch, semester } = req.body;
+    const { name, email, password, college } = req.body;
 
     if (!name || typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({ success: false, message: 'Full name is required' });
@@ -39,14 +39,12 @@ exports.registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Hardcode role to student - strictly ignore any client-sent role
+    // Public registration creates ONLY student accounts - strictly enforce role = student
     const user = await User.create({
       name: name.trim(),
       email: cleanEmail,
       password: hashedPassword,
       college: typeof college === 'string' ? college.trim() : '',
-      branch: branch || 'CSE',
-      semester: Number(semester) || 1,
       role: 'student',
     });
 
@@ -60,8 +58,6 @@ exports.registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         college: user.college,
-        branch: user.branch,
-        semester: user.semester,
         bookmarks: user.bookmarks,
         token,
       },
@@ -85,12 +81,7 @@ exports.loginUser = async (req, res) => {
 
     const user = await User.findOne({ email: cleanEmail });
     if (!user) {
-      // Generic message to prevent user enumeration
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
-    }
-
-    if (user.isBlocked || user.isActive === false) {
-      return res.status(403).json({ success: false, message: 'Your account has been disabled by an administrator' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -113,8 +104,6 @@ exports.loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         college: user.college,
-        branch: user.branch,
-        semester: user.semester,
         bookmarks: user.bookmarks,
         token,
       },
@@ -150,15 +139,13 @@ exports.updateProfile = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User account not found' });
     }
 
-    // Ignore any role changes to prevent privilege escalation
+    // Role escalation prevention: ignore any role parameter sent in req.body
     if (req.body.name && typeof req.body.name === 'string') {
       user.name = req.body.name.trim();
     }
     if (req.body.college !== undefined && typeof req.body.college === 'string') {
       user.college = req.body.college.trim();
     }
-    if (req.body.branch) user.branch = req.body.branch;
-    if (req.body.semester) user.semester = Number(req.body.semester);
 
     if (req.body.password) {
       if (typeof req.body.password !== 'string' || req.body.password.length < 6) {
@@ -178,8 +165,6 @@ exports.updateProfile = async (req, res) => {
         email: updatedUser.email,
         role: updatedUser.role, // role remains untouched
         college: updatedUser.college,
-        branch: updatedUser.branch,
-        semester: updatedUser.semester,
         bookmarks: updatedUser.bookmarks,
       },
     });
@@ -188,3 +173,4 @@ exports.updateProfile = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to update profile' });
   }
 };
+

@@ -7,14 +7,18 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ['student', 'admin'], default: 'student' },
     college: { type: String, default: '' },
-    branch: { type: String, default: 'CSE' },
-    semester: { type: Number, default: 1 },
-    isBlocked: { type: Boolean, default: false },
-    isActive: { type: Boolean, default: true },
     bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resource' }],
   },
   { timestamps: true }
 );
 
+// Ensure password hash is never exposed in JSON output
+UserSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
+
 module.exports = mongoose.model('User', UserSchema);
+
 

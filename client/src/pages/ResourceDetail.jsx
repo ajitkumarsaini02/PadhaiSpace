@@ -4,16 +4,13 @@ import BookmarkButton from '../components/BookmarkButton';
 import PDFViewerModal from '../components/PDFViewerModal';
 import { resourceService } from '../services/api';
 import {
-  FileText,
   Eye,
   BookOpen,
   ArrowLeft,
   Calendar,
   Tag,
   ShieldCheck,
-  Sparkles,
   Layers,
-  GraduationCap,
 } from 'lucide-react';
 
 export default function ResourceDetail() {
@@ -29,7 +26,6 @@ export default function ResourceDetail() {
         const res = await resourceService.getById(id);
         if (res.success) {
           setResource(res.data);
-          // Auto increment view count
           resourceService.incrementViews(id).catch(() => {});
         }
       } catch (err) {
@@ -82,16 +78,6 @@ export default function ResourceDetail() {
               <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-[#EFF5FF] dark:bg-[#161D31] text-[#4F8FEF] border border-[#DCE2EC] dark:border-[#252D42]">
                 {resource.type}
               </span>
-              {resource.branchId && (
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-[#F5F7FB] dark:bg-[#161D31] text-[#172033] dark:text-[#F8FAFC] border border-[#DCE2EC] dark:border-[#252D42] flex items-center">
-                  <GraduationCap className="w-3 h-3 mr-1 text-[#64748B]" /> {resource.branchId.name} Branch
-                </span>
-              )}
-              {resource.semesterId?.number && (
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-[#F5F7FB] dark:bg-[#161D31] text-[#64748B] dark:text-[#9AA6BC] border border-[#DCE2EC] dark:border-[#252D42]">
-                  Sem {resource.semesterId.number}
-                </span>
-              )}
               {resource.unitId && (
                 <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center">
                   <Layers className="w-3 h-3 mr-1 text-amber-500" /> Unit {resource.unitId.unitNumber}

@@ -14,32 +14,28 @@ const errorHandler = require('./middleware/errorHandler');
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
-const branchRoutes = require('./routes/branchRoutes');
-const semesterRoutes = require('./routes/semesterRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
 const unitRoutes = require('./routes/unitRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
 const bookmarkRoutes = require('./routes/bookmarkRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const subjectOfferingRoutes = require('./routes/subjectOfferingRoutes');
 const activityRoutes = require('./routes/activityRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
-// 1. Helmet Security Headers (Configured for Razorpay & PDF Blob Viewer)
+// 1. Helmet Security Headers (Configured for PDF Blob Viewer)
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        frameSrc: ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"],
+        frameSrc: ["'self'"],
         imgSrc: ["'self'", "data:", "blob:", "https:"],
-        connectSrc: ["'self'", "https://api.razorpay.com", "https://lumberjack.razorpay.com"],
+        connectSrc: ["'self'"],
         objectSrc: ["'self'", "blob:"],
       },
     },
@@ -89,19 +85,9 @@ const authLimiter = rateLimit({
   message: { success: false, message: 'Too many authentication attempts. Please wait 15 minutes.' },
 });
 
-const paymentLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 25,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many payment requests. Please try again later.' },
-});
-
 app.use('/api', globalLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
-app.use('/api/payments/create-order', paymentLimiter);
-app.use('/api/payments/verify', paymentLimiter);
 
 // 5. Request Body Size Limits
 app.use(express.json({ limit: '5mb' }));
@@ -129,17 +115,13 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/branches', branchRoutes);
-app.use('/api/semesters', semesterRoutes);
 app.use('/api/subjects', subjectRoutes);
-app.use('/api/subject-offerings', subjectOfferingRoutes);
 app.use('/api/units', unitRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/resource-activities', activityRoutes);
-app.use('/api/payments', paymentRoutes);
 
 // 404 handler for unknown API routes
 app.use('/api/*', (req, res) => {
@@ -169,11 +151,11 @@ const startServer = async () => {
 
   // Auto-seed check
   try {
-    const Branch = require('./models/Branch');
+    const Subject = require('./models/Subject');
     const seedDatabase = require('./seed/seedData');
-    const branchCount = await Branch.countDocuments();
-    if (branchCount === 0) {
-      console.log('[Auto-Seed] Empty database detected. Bootstrapping initial CSE curriculum...');
+    const subjectCount = await Subject.countDocuments();
+    if (subjectCount === 0) {
+      console.log('[Auto-Seed] Empty database detected. Bootstrapping initial PadhaiSpace curriculum...');
       await seedDatabase();
       console.log('[Auto-Seed] Database populated successfully!');
     }

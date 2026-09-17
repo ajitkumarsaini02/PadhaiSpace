@@ -4,8 +4,6 @@ const {
   getAdminStats,
   getUsers,
   toggleUserStatus,
-  grantSubjectAccess,
-  revokeSubjectAccess,
   globalAdminSearch,
   getAuditLogs,
 } = require('../controllers/adminController');
@@ -17,10 +15,6 @@ router.get('/stats', protect, adminOnly, getAdminStats);
 router.get('/search', protect, adminOnly, globalAdminSearch);
 router.get('/users', protect, adminOnly, getUsers);
 router.put('/users/:id/status', protect, adminOnly, toggleUserStatus);
-
-router.post('/access/grant', protect, adminOnly, grantSubjectAccess);
-router.put('/access/:id/revoke', protect, adminOnly, revokeSubjectAccess);
-
 router.get('/audit-logs', protect, adminOnly, getAuditLogs);
 
 // Resource Activity Audit Routes (Admin Only)

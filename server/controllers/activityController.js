@@ -75,7 +75,7 @@ exports.getAdminActivities = async (req, res) => {
     const total = await ResourceActivity.countDocuments(filter);
 
     const activities = await ResourceActivity.find(filter)
-      .populate('userId', 'name email role college branch')
+      .populate('userId', 'name email role college')
       .populate('resourceId', 'title type fileUrl')
       .sort({ timestamp: -1 })
       .skip(skip)

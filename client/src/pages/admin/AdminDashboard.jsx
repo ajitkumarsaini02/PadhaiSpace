@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../../services/api';
+import AdminNav from '../../components/AdminNav';
 import {
-  ShieldAlert,
   Users,
   BookOpen,
   FileText,
-  PlusCircle,
-  Search,
+  Layers,
+  Eye,
+  Download,
+  Activity,
+  FileCode,
+  Sparkles,
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -31,121 +35,138 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Header Banner */}
-      <div className="bg-[#0B1020] border border-[#252D42] rounded-xl p-6 sm:p-8 text-[#F8FAFC] shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#161D31] text-[#F2A93B] border border-[#252D42] text-xs font-bold mb-2">
-            <ShieldAlert className="w-4 h-4 text-[#F2A93B]" />
-            <span>Platform Administrator Dashboard</span>
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-bold text-[#F8FAFC]">
-            PadhaiSpace Admin Console
-          </h1>
-          <p className="text-xs sm:text-sm text-[#9AA6BC] mt-1">
-            Complete management of CSE / AIML / DS curriculum, subjects, unit PDFs, student accounts, and audit logs.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          <Link
-            to="/admin/search"
-            className="px-4 py-2.5 bg-[#161D31] hover:bg-[#252D42] text-[#F8FAFC] border border-[#252D42] font-bold text-xs rounded-lg shadow-subtle transition-colors flex items-center"
-          >
-            <Search className="w-4 h-4 mr-1.5 text-[#4F8FEF]" /> Global Search
-          </Link>
-          <Link
-            to="/admin/resources"
-            className="px-4 py-2.5 bg-[#4F8FEF] hover:bg-[#3D7FE5] text-white font-bold text-xs rounded-lg shadow-subtle transition-colors flex items-center"
-          >
-            <PlusCircle className="w-4 h-4 mr-1.5" /> Upload Resource
-          </Link>
-        </div>
-      </div>
-
-      {/* Admin Navigation Quick Tabs */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 border-b border-[#DCE2EC] dark:border-[#252D42]">
-        {[
-          { to: '/admin', label: 'Overview', active: true },
-          { to: '/admin/users', label: 'Student Accounts' },
-          { to: '/admin/subjects', label: 'Subjects' },
-          { to: '/admin/units', label: 'Units' },
-          { to: '/admin/resources', label: 'Resources' },
-          { to: '/admin/activity', label: 'Resource Activity' },
-          { to: '/admin/audit-logs', label: 'Admin Audit Logs' },
-        ].map((tab) => (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${
-              tab.active
-                ? 'bg-[#4F8FEF] text-white shadow-subtle'
-                : 'bg-white dark:bg-[#111729] text-[#172033] dark:text-[#F8FAFC] hover:bg-[#F5F7FB] dark:hover:bg-[#161D31] border border-[#DCE2EC] dark:border-[#252D42]'
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-[#F8FAFC]">
+      {/* Shared Admin Navigation Header */}
+      <AdminNav
+        title="PadhaiSpace Admin Console"
+        subtitle="Free Engineering Resources — Management of subjects, units, PDFs, PYQs, student accounts & activity logs"
+      />
 
       {/* Platform Statistics */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-pulse">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 bg-[#DCE2EC] dark:bg-[#161D31] rounded-xl"></div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 animate-pulse">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <div key={i} className="h-24 bg-[#0B0F19] border border-[#1E293B] rounded-xl"></div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-[#111729] p-5 rounded-xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle">
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase flex items-center">
-              <Users className="w-3.5 h-3.5 mr-1.5 text-[#4F8FEF]" /> Total Students
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <Users className="w-3.5 h-3.5 mr-1.5 text-[#38BDF8]" /> Total Students
             </p>
-            <h3 className="text-2xl font-bold text-[#172033] dark:text-[#F8FAFC] mt-1">{stats?.totalUsers || 0}</h3>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalUsers || 0}</h3>
           </div>
 
-          <div className="bg-white dark:bg-[#111729] p-5 rounded-xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle">
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase flex items-center">
-              <BookOpen className="w-3.5 h-3.5 mr-1.5 text-[#4F8FEF]" /> Total Subjects
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <BookOpen className="w-3.5 h-3.5 mr-1.5 text-[#38BDF8]" /> Total Subjects
             </p>
-            <h3 className="text-2xl font-bold text-[#172033] dark:text-[#F8FAFC] mt-1">{stats?.totalSubjects || 0}</h3>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalSubjects || 0}</h3>
           </div>
 
-          <div className="bg-white dark:bg-[#111729] p-5 rounded-xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle">
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase flex items-center">
-              <FileText className="w-3.5 h-3.5 mr-1.5 text-[#4F8FEF]" /> Total Resources
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <Layers className="w-3.5 h-3.5 mr-1.5 text-[#38BDF8]" /> Total Units
             </p>
-            <h3 className="text-2xl font-bold text-[#172033] dark:text-[#F8FAFC] mt-1">{stats?.totalResources || 0}</h3>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalUnits || 0}</h3>
           </div>
 
-          <div className="bg-white dark:bg-[#111729] p-5 rounded-xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle">
-            <p className="text-xs font-semibold text-[#64748B] dark:text-[#9AA6BC] uppercase flex items-center">
-              <FileText className="w-3.5 h-3.5 mr-1.5 text-[#6EA8FF]" /> Total PDFs
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <FileText className="w-3.5 h-3.5 mr-1.5 text-[#8B5CF6]" /> Total Resources
             </p>
-            <h3 className="text-2xl font-bold text-[#172033] dark:text-[#F8FAFC] mt-1">{stats?.totalPDFs || 0}</h3>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalResources || 0}</h3>
+          </div>
+
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <FileCode className="w-3.5 h-3.5 mr-1.5 text-[#38BDF8]" /> Total PDFs
+            </p>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalPDFs || 0}</h3>
+          </div>
+
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#C084FC]" /> Total PYQs
+            </p>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalPYQs || 0}</h3>
+          </div>
+
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <FileText className="w-3.5 h-3.5 mr-1.5 text-[#10B981]" /> Total Notes
+            </p>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalNotes || 0}</h3>
+          </div>
+
+          <div className="tech-card p-4">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <Eye className="w-3.5 h-3.5 mr-1.5 text-[#38BDF8]" /> Resource Views
+            </p>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalViews || 0}</h3>
+          </div>
+
+          <div className="tech-card p-4 col-span-2 sm:col-span-1">
+            <p className="text-xs font-mono font-semibold text-[#94A3B8] uppercase flex items-center">
+              <Download className="w-3.5 h-3.5 mr-1.5 text-[#10B981]" /> Resource Downloads
+            </p>
+            <h3 className="text-2xl font-black text-[#F8FAFC] mt-1.5">{stats?.totalDownloads || 0}</h3>
           </div>
         </div>
       )}
 
-      {/* Recent Registered Students Section */}
-      <div className="bg-white dark:bg-[#111729] rounded-xl border border-[#DCE2EC] dark:border-[#252D42] shadow-subtle overflow-hidden">
-        <div className="p-4 bg-[#F5F7FB] dark:bg-[#161D31] border-b border-[#DCE2EC] dark:border-[#252D42] flex items-center justify-between font-bold text-xs text-[#172033] dark:text-[#F8FAFC]">
-          <span className="flex items-center"><Users className="w-4 h-4 mr-2 text-[#4F8FEF]" /> Recent Registered Students</span>
-          <Link to="/admin/users" className="text-[#4F8FEF] hover:underline text-[11px]">View All →</Link>
+      {/* Grid for Recent Students & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Registered Students */}
+        <div className="tech-card overflow-hidden">
+          <div className="p-4 bg-[#0F172A] border-b border-[#1E293B] flex items-center justify-between font-mono font-bold text-xs">
+            <span className="flex items-center text-[#F8FAFC]"><Users className="w-4 h-4 mr-2 text-[#38BDF8]" /> Registered Students</span>
+            <Link to="/admin/users" className="text-[#38BDF8] hover:underline text-[11px]">View All →</Link>
+          </div>
+
+          <div className="divide-y divide-[#1E293B]">
+            {stats?.recentUsers?.map((u) => (
+              <div key={u._id} className="p-3.5 flex items-center justify-between text-xs">
+                <div>
+                  <p className="font-bold text-[#F8FAFC]">{u.name}</p>
+                  <p className="text-[#94A3B8] text-[11px] font-mono">{u.email}</p>
+                  {u.college && <p className="text-[#64748B] text-[10px] mt-0.5">{u.college}</p>}
+                </div>
+                <span className="text-[11px] text-[#64748B] font-mono">
+                  {new Date(u.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="divide-y divide-[#DCE2EC] dark:divide-[#252D42]">
-          {stats?.recentUsers?.map((u) => (
-            <div key={u._id} className="p-3.5 flex items-center justify-between text-xs">
-              <div>
-                <p className="font-bold text-[#172033] dark:text-[#F8FAFC]">{u.name}</p>
-                <p className="text-[#64748B] dark:text-[#9AA6BC] text-[11px]">{u.email} • {u.branch} Sem {u.semester}</p>
-              </div>
-              <span className="text-[11px] text-[#64748B] dark:text-[#9AA6BC]">
-                {new Date(u.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-              </span>
-            </div>
-          ))}
+        {/* Recent Activity */}
+        <div className="tech-card overflow-hidden">
+          <div className="p-4 bg-[#0F172A] border-b border-[#1E293B] flex items-center justify-between font-mono font-bold text-xs">
+            <span className="flex items-center text-[#F8FAFC]"><Activity className="w-4 h-4 mr-2 text-[#C084FC]" /> Recent Resource Activity</span>
+            <Link to="/admin/activity" className="text-[#38BDF8] hover:underline text-[11px]">View All →</Link>
+          </div>
+
+          <div className="divide-y divide-[#1E293B]">
+            {stats?.recentActivities?.length > 0 ? (
+              stats.recentActivities.map((act) => (
+                <div key={act._id} className="p-3.5 flex items-center justify-between text-xs">
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-[#F8FAFC]">{act.resourceId?.title || 'Resource'}</p>
+                    <p className="text-[11px] text-[#94A3B8]">
+                      {act.userId?.name || 'Student'} • <span className="font-mono text-[#38BDF8]">{act.eventType}</span>
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#64748B]">
+                    {new Date(act.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="p-6 text-center text-xs text-[#94A3B8]">No recent resource activity recorded.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>
