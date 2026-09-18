@@ -278,6 +278,7 @@ export default function AdminResources() {
       source: '',
       academicYear: '',
       paperYear: '',
+      externalUrl: '',
     });
     setFile(null);
     setFileError('');
@@ -297,6 +298,7 @@ export default function AdminResources() {
       source: r.source || '',
       academicYear: r.academicYear || '',
       paperYear: r.paperYear ? String(r.paperYear) : '',
+      externalUrl: r.externalUrl || r.fileUrl || '',
     });
     setFile(null);
     setFileError('');
@@ -353,8 +355,8 @@ export default function AdminResources() {
       }
     }
 
-    if (!editingId && !file) {
-      setMsg({ type: 'error', text: 'PDF File upload is required for new resources.' });
+    if (!editingId && !file && !form.externalUrl.trim()) {
+      setMsg({ type: 'error', text: 'PDF File upload OR External PDF URL (Google Drive / Cloudinary Link) is required.' });
       return;
     }
 
@@ -375,6 +377,7 @@ export default function AdminResources() {
       }
       if (form.academicYear) formData.append('academicYear', form.academicYear);
       if (isPyq && form.paperYear) formData.append('paperYear', form.paperYear);
+      if (form.externalUrl) formData.append('externalUrl', form.externalUrl.trim());
       if (file) formData.append('file', file);
 
       let res;
@@ -756,6 +759,23 @@ export default function AdminResources() {
                   <AlertCircle className="w-3.5 h-3.5 mr-1" /> {fileError}
                 </p>
               )}
+
+              {/* OR External PDF URL (Google Drive, Cloudinary, AWS S3) */}
+              <div className="mt-3">
+                <label className="block text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC] mb-1">
+                  OR External PDF Link (Google Drive / Cloudinary)
+                </label>
+                <input
+                  type="url"
+                  value={form.externalUrl}
+                  onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
+                  placeholder="e.g. https://drive.google.com/file/d/1.../view or https://res.cloudinary.com/..."
+                  className="w-full px-3.5 py-2 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 font-mono"
+                />
+                <p className="text-[10px] font-mono text-blue-600 dark:text-[#38BDF8] mt-1 font-medium">
+                  💡 Recommended for Vercel/Render hosting. Google Drive & Cloudinary links automatically stream with full watermarking protection!
+                </p>
+              </div>
             </div>
 
             {/* Description & Tags */}
