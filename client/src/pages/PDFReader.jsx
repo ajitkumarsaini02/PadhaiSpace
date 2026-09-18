@@ -34,13 +34,13 @@ export default function PDFReader() {
       setResource(resData.data);
 
       const jwtToken = token || localStorage.getItem('token');
-      if (!jwtToken) {
-        navigate('/login', { state: { from: { pathname: `/resources/${id}/read` } } });
-        return;
-      }
-
       const apiBase = getApiBaseUrl();
       setStatusText('Decrypting & streaming protected PDF document...');
+
+      const headers = {};
+      if (jwtToken) {
+        headers['Authorization'] = `Bearer ${jwtToken}`;
+      }
 
       // 2. Fetch PDF binary stream with retry logic (up to 3 attempts)
       let pdfResponse = null;
@@ -54,11 +54,7 @@ export default function PDFReader() {
             setStatusText(`Retrying stream connection (attempt ${attempts} of ${maxAttempts})...`);
           }
 
-          pdfResponse = await fetch(`${apiBase}/resources/${id}/view`, {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-            },
-          });
+          pdfResponse = await fetch(`${apiBase}/resources/${id}/view`, { headers });
 
           if (pdfResponse.ok || pdfResponse.status === 401 || pdfResponse.status === 403) {
             break; // Valid status code returned

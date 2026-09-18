@@ -41,6 +41,29 @@ const protect = async (req, res, next) => {
   return res.status(401).json({ success: false, message: 'Not authorized, token missing' });
 };
 
+const optionalAuth = async (req, res, next) => {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    try {
+      const token = req.headers.authorization.split(' ')[1];
+      if (token) {
+        const decoded = jwt.verify(
+          token,
+          process.env.JWT_SECRET || 'padhaispace_super_secret_jwt_key_2026_engineering'
+        );
+        if (decoded.id && mongoose.Types.ObjectId.isValid(decoded.id)) {
+          req.user = await User.findById(decoded.id).select('-password');
+        }
+      }
+    } catch (error) {
+      // Proceed as guest if token is invalid or expired
+    }
+  }
+  return next();
+};
+
 const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
     return next();
@@ -51,4 +74,4 @@ const adminOnly = (req, res, next) => {
 const authenticateUser = protect;
 const requireAdmin = adminOnly;
 
-module.exports = { protect, adminOnly, authenticateUser, requireAdmin };
+module.exports = { protect, optionalAuth, adminOnly, authenticateUser, requireAdmin };
