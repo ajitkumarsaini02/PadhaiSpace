@@ -82,8 +82,9 @@ function PDFPageCanvas({ pdfDoc, pageNum, scale, rotation, isDarkMode, userEmail
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
 
-        canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
-        canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
+        canvas.style.width = '100%';
+        canvas.style.maxWidth = `${Math.floor(viewport.width / dpr)}px`;
+        canvas.style.height = 'auto';
 
         const renderContext = {
           canvasContext: context,
@@ -116,7 +117,7 @@ function PDFPageCanvas({ pdfDoc, pageNum, scale, rotation, isDarkMode, userEmail
       ref={containerRef}
       id={`pdf-page-${pageNum}`}
       data-page-number={pageNum}
-      className={`relative inline-block border border-slate-800 shadow-2xl rounded-xl overflow-hidden my-4 transition-all duration-200 select-none min-h-[400px] ${
+      className={`relative w-full max-w-full sm:w-auto inline-block border border-slate-800 shadow-2xl rounded-xl overflow-hidden my-2 sm:my-4 transition-all duration-200 select-none ${
         isDarkMode ? 'bg-slate-900' : 'bg-white'
       }`}
       style={isDarkMode ? { filter: 'invert(0.92) hue-rotate(180deg)' } : {}}
@@ -127,7 +128,7 @@ function PDFPageCanvas({ pdfDoc, pageNum, scale, rotation, isDarkMode, userEmail
         </div>
       )}
 
-      <canvas ref={canvasRef} className="block max-w-full h-auto" />
+      <canvas ref={canvasRef} className="block w-full max-w-full h-auto" />
 
       {/* Page Number Label Badge */}
       <div className="absolute top-3 right-3 z-10 bg-slate-950/90 text-slate-200 border border-slate-700/80 px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold select-none shadow-md">
@@ -155,8 +156,12 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [numPages, setNumPages] = useState(0);
-  const [scale, setScale] = useState(0.85);
+  const [scale, setScale] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 640 ? 1.0 : 0.85
+  );
+  const [showDisclaimer, setShowDisclaimer] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth >= 640
+  );
 
   const [rotation, setRotation] = useState(0); // 0, 90, 180, 270
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -637,7 +642,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
           </button>
 
           {/* Zoom Controls */}
-          <div className="hidden sm:flex items-center space-x-1 bg-slate-800/90 border border-slate-700/80 rounded-xl px-1 py-1">
+          <div className="flex items-center space-x-1 bg-slate-800/90 border border-slate-700/80 rounded-xl px-1 py-1">
             <button onClick={zoomOut} className="p-1 hover:bg-slate-700 rounded text-slate-300 cursor-pointer" title="Zoom Out">
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
@@ -688,18 +693,21 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
         <div
           ref={scrollContainerRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 flex flex-col items-center scroll-smooth"
+          className="flex-1 overflow-y-auto p-2 sm:p-6 lg:p-8 flex flex-col items-center scroll-smooth"
         >
           {/* Blur Overlay on Focus Loss */}
           {isFocusLost && (
-            <div className="fixed inset-0 z-50 bg-[#070A12]/95 backdrop-blur-2xl flex flex-col items-center justify-center text-center p-6 space-y-4">
+            <div
+              onClick={() => setIsFocusLost(false)}
+              className="fixed inset-0 z-50 bg-[#070A12]/95 backdrop-blur-2xl flex flex-col items-center justify-center text-center p-6 space-y-4 cursor-pointer"
+            >
               <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 animate-pulse">
                 <EyeOff className="w-8 h-8" />
               </div>
               <div className="space-y-1.5 max-w-sm">
                 <h3 className="text-lg font-extrabold text-white">Document Viewing Protection Active</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Screen contents are obscured while window focus is shifted. Return focus to resume reading.
+                  Screen contents are obscured while window focus is shifted. Click anywhere or return focus to resume reading.
                 </p>
               </div>
             </div>
@@ -714,48 +722,60 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
           )}
 
           {/* OFFICIAL LEGAL & COPYRIGHT DISCLAIMER BOX (At top of document) */}
-          <div className="w-full max-w-3xl mb-4 bg-[#160B0E]/95 border-2 border-rose-900/80 rounded-2xl p-5 sm:p-6 text-rose-100 shadow-2xl space-y-4 font-sans select-none shrink-0">
+          <div className="w-full max-w-3xl mb-4 bg-[#160B0E]/95 border-2 border-rose-900/80 rounded-2xl p-4 sm:p-6 text-rose-100 shadow-2xl space-y-3 font-sans select-none shrink-0">
             {/* Header Tag line */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/60 pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/60 pb-2.5">
               <div className="flex items-center space-x-2 text-rose-400 font-mono font-bold text-xs">
                 <ShieldAlert className="w-4 h-4 text-rose-500" />
                 <span>SECURITY NOTICE • PAGE {pageNumber}</span>
               </div>
-              <div className="flex items-center space-x-1.5 bg-rose-500/10 border border-rose-500/30 px-3 py-0.5 rounded-full text-[10px] font-mono font-extrabold text-rose-400 tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping mr-1"></span>
-                FORENSIC TRACKING ACTIVE
+              <div className="flex items-center space-x-2">
+                <span className="hidden sm:inline-flex items-center space-x-1.5 bg-rose-500/10 border border-rose-500/30 px-3 py-0.5 rounded-full text-[10px] font-mono font-extrabold text-rose-400 tracking-wider">
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping mr-1"></span>
+                  FORENSIC TRACKING ACTIVE
+                </span>
+                <button
+                  onClick={() => setShowDisclaimer(!showDisclaimer)}
+                  className="text-[10px] font-mono font-extrabold text-rose-300 hover:text-white bg-rose-500/20 border border-rose-500/40 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                >
+                  {showDisclaimer ? 'Hide Legal Details' : 'Show Legal Disclaimer'}
+                </button>
               </div>
             </div>
 
-            {/* Disclaimer Title */}
-            <h2 className="text-lg sm:text-xl font-black text-white tracking-tight uppercase">
-              OFFICIAL LEGAL & COPYRIGHT DISCLAIMER
-            </h2>
+            {showDisclaimer && (
+              <>
+                {/* Disclaimer Title */}
+                <h2 className="text-base sm:text-xl font-black text-white tracking-tight uppercase">
+                  OFFICIAL LEGAL & COPYRIGHT DISCLAIMER
+                </h2>
 
-            {/* 4 Points */}
-            <ol className="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal list-decimal pl-4">
-              <li>
-                <strong className="text-white">Unauthorized Screenshots & Sharing Prohibited:</strong> Taking screenshots, screen recordings, extracting, copying, or forwarding any part of this document via WhatsApp, Telegram, Google Drive, or any public/private media is strictly prohibited.
-              </li>
-              <li>
-                <strong className="text-white">Identity Leak Risk:</strong> Every single page of this document contains cryptographic invisible and visible digital watermarks tied to your personal registered account (<span className="text-blue-400 font-mono font-bold">{userEmail}</span>) and Device IP (<span className="text-blue-400 font-mono font-bold">{userIp}</span>). If any screenshot is taken and shared, your personal credentials will be leaked publicly and traced back to you immediately.
-              </li>
-              <li>
-                <strong className="text-white">Transaction ID & Traceability:</strong> We can track and identify you directly by your unique Session ID / Student ID, registered account records, and access logs. Every document access is cryptographically linked to your transaction & session history in our database.
-              </li>
-              <li>
-                <strong className="text-white">Strict Legal Actions:</strong> Any copyright infringement, unauthorized sharing, or attempt to bypass security protections is punishable under the <strong className="text-amber-400">Information Technology Act (IT Act 2000, Sections 43, 66 & 72)</strong> and the <strong className="text-amber-400">Indian Copyright Act 1957</strong>, leading to permanent blacklisting, forfeiture of all access, and criminal/civil legal prosecution.
-              </li>
-            </ol>
+                {/* 4 Points */}
+                <ol className="space-y-2.5 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal list-decimal pl-4">
+                  <li>
+                    <strong className="text-white">Unauthorized Screenshots & Sharing Prohibited:</strong> Taking screenshots, screen recordings, extracting, copying, or forwarding any part of this document via WhatsApp, Telegram, Google Drive, or any public/private media is strictly prohibited.
+                  </li>
+                  <li>
+                    <strong className="text-white">Identity Leak Risk:</strong> Every single page of this document contains cryptographic invisible and visible digital watermarks tied to your personal registered account (<span className="text-blue-400 font-mono font-bold">{userEmail}</span>) and Device IP (<span className="text-blue-400 font-mono font-bold">{userIp}</span>). If any screenshot is taken and shared, your personal credentials will be leaked publicly and traced back to you immediately.
+                  </li>
+                  <li>
+                    <strong className="text-white">Transaction ID & Traceability:</strong> We can track and identify you directly by your unique Session ID / Student ID, registered account records, and access logs. Every document access is cryptographically linked to your transaction & session history in our database.
+                  </li>
+                  <li>
+                    <strong className="text-white">Strict Legal Actions:</strong> Any copyright infringement, unauthorized sharing, or attempt to bypass security protections is punishable under the <strong className="text-amber-400">Information Technology Act (IT Act 2000, Sections 43, 66 & 72)</strong> and the <strong className="text-amber-400">Indian Copyright Act 1957</strong>, leading to permanent blacklisting, forfeiture of all access, and criminal/civil legal prosecution.
+                  </li>
+                </ol>
 
-            {/* Footer info line */}
-            <div className="pt-3 border-t border-rose-900/60 flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-400 gap-2">
-              <div>Document: <span className="text-white font-bold">{title}</span></div>
-              <div>Licensed to: <span className="text-blue-400 font-bold">{userEmail}</span></div>
-              <div className="text-rose-400 font-bold flex items-center">
-                <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" /> Protected by PadhaiSpace Security Shield
-              </div>
-            </div>
+                {/* Footer info line */}
+                <div className="pt-2.5 border-t border-rose-900/60 flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-400 gap-2">
+                  <div>Document: <span className="text-white font-bold">{title}</span></div>
+                  <div>Licensed to: <span className="text-blue-400 font-bold">{userEmail}</span></div>
+                  <div className="text-rose-400 font-bold flex items-center">
+                    <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" /> Protected by PadhaiSpace Security Shield
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* RED TICKER WARNING BANNER */}
