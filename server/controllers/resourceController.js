@@ -5,6 +5,7 @@ const { logAdminAction } = require('../utils/auditLogger');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const { supabase } = require('../config/supabase');
 
 // Helper to remove file from disk safely
 const deleteFileFromDisk = (fileUrl) => {
@@ -714,6 +715,28 @@ exports.viewProtectedPDF = async (req, res) => {
         pdfBuffer = await fetchRemotePDFBuffer(remoteUrl);
       } catch (remoteErr) {
         console.warn(`[PDF Stream] Remote fetch failed for resource ${resource._id}:`, remoteErr.message);
+      }
+    }
+
+    if (!pdfPath && !pdfBuffer && supabase) {
+      try {
+        const bucketName = process.env.SUPABASE_BUCKET || 'pdf-notes';
+        let storagePath = resource.fileUrl || '';
+        storagePath = storagePath.replace(/^[\/\\]+(uploads|protected_uploads)[\/\\]+/i, '').replace(/^[\/\\]+/, '');
+        if (!storagePath.startsWith('Notes/') && !storagePath.startsWith('Notes\\')) {
+          storagePath = `Notes/${storagePath}`;
+        }
+        storagePath = storagePath.replace(/\\/g, '/');
+
+        const { data, error } = await supabase.storage.from(bucketName).download(storagePath);
+        if (!error && data) {
+          const arrayBuf = await data.arrayBuffer();
+          pdfBuffer = Buffer.from(arrayBuf);
+        } else if (error) {
+          console.warn(`[Supabase Storage Stream Error] ${storagePath}:`, error.message);
+        }
+      } catch (supabaseErr) {
+        console.warn(`[Supabase Stream Warn] ${resource._id}:`, supabaseErr.message);
       }
     }
 
