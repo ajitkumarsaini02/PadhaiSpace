@@ -156,6 +156,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
 
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
+  const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(() =>
     typeof window !== 'undefined' && window.innerWidth < 640 ? 1.0 : 0.85
   );
@@ -224,7 +225,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
 
   // Activity Audit Logging Helper
   const sendActivityLog = (eventType, extraMetadata = {}) => {
-    if (!resourceId) return;
+    if (!resourceId || !user) return;
     activityService
       .log({
         resourceId,
@@ -237,17 +238,17 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
           ...extraMetadata,
         },
       })
-      .catch((err) => console.warn('[Activity Audit Log Warning]', err.message));
+      .catch(() => {});
   };
 
   // Audit Log: PDF_OPEN & PDF_CLOSE Lifecycle
   useEffect(() => {
-    if (!resourceId || !pdfDoc) return;
+    if (!resourceId || !pdfDoc || !user) return;
     sendActivityLog('PDF_OPEN');
     return () => {
       sendActivityLog('PDF_CLOSE');
     };
-  }, [resourceId, pdfDoc]);
+  }, [resourceId, pdfDoc, user]);
 
   // Visibility, Fullscreen, and Print Events
   useEffect(() => {
@@ -293,7 +294,7 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       window.removeEventListener('beforeprint', handleBeforePrint);
     };
-  }, [resourceId]);
+  }, [resourceId, user]);
 
   // Load PDF Document from ArrayBuffer with multi-stage fallback
   useEffect(() => {
@@ -305,13 +306,13 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
         setLoading(true);
         setError(null);
 
-        const typedArray = new Uint8Array(pdfArrayBuffer);
+        const createDataBuffer = () => new Uint8Array(pdfArrayBuffer.slice(0));
         let doc;
 
         // Stage 1: Primary Worker Task
         try {
           const loadingTask = pdfjsLib.getDocument({
-            data: typedArray,
+            data: createDataBuffer(),
             cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${PDFJS_VERSION}/cmaps/`,
             cMapPacked: true,
           });
@@ -322,13 +323,13 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
           // Stage 2: unpkg worker fallback
           try {
             pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${PDFJS_VERSION}/build/pdf.worker.min.js`;
-            const unpkgTask = pdfjsLib.getDocument({ data: typedArray });
+            const unpkgTask = pdfjsLib.getDocument({ data: createDataBuffer() });
             doc = await unpkgTask.promise;
           } catch (unpkgErr) {
             console.warn('[PDFViewer] Stage 2 unpkg worker failed, trying in-memory stage 3 fallback:', unpkgErr.message);
 
             // Stage 3: In-Memory non-worker fallback
-            const fallbackTask = pdfjsLib.getDocument({ data: typedArray, disableWorker: true });
+            const fallbackTask = pdfjsLib.getDocument({ data: createDataBuffer(), disableWorker: true });
             doc = await fallbackTask.promise;
           }
         }
