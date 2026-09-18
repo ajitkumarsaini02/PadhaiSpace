@@ -16,3 +16,9 @@ services:
         generateValue: true
       - key: CLIENT_URL
         sync: false
+      - key: SUPABASE_URL
+        value: https://uhcysgjacnbdzswevnwn.supabase.co
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_BUCKET
+        value: pdf-notes

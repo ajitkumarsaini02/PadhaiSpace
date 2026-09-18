@@ -24,8 +24,10 @@ const getValidUrl = () => {
 };
 
 const getValidKey = () => {
+  if (isValidKey(process.env.SUPABASE_SECRET_KEY)) return process.env.SUPABASE_SECRET_KEY;
   if (isValidKey(process.env.SUPABASE_SERVICE_KEY)) return process.env.SUPABASE_SERVICE_KEY;
   if (isValidKey(process.env.SUPABASE_ANON_KEY)) return process.env.SUPABASE_ANON_KEY;
+  if (isValidKey(process.env.SUPABASE_PUBLISHABLE_KEY)) return process.env.SUPABASE_PUBLISHABLE_KEY;
   if (isValidKey(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)) return process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   if (isValidKey(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)) return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return '';
