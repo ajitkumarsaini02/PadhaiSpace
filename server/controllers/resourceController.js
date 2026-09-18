@@ -721,22 +721,31 @@ exports.viewProtectedPDF = async (req, res) => {
     if (!pdfPath && !pdfBuffer && supabase) {
       try {
         const bucketName = process.env.SUPABASE_BUCKET || 'pdf-notes';
-        let storagePath = resource.fileUrl || '';
-        storagePath = storagePath.replace(/^[\/\\]+(uploads|protected_uploads)[\/\\]+/i, '').replace(/^[\/\\]+/, '');
-        if (!storagePath.startsWith('Notes/') && !storagePath.startsWith('Notes\\')) {
-          storagePath = `Notes/${storagePath}`;
-        }
-        storagePath = storagePath.replace(/\\/g, '/');
+        let rawPath = (resource.fileUrl || '').replace(/^[\/\\]+(uploads|protected_uploads)[\/\\]+/i, '').replace(/^[\/\\]+/, '');
+        rawPath = rawPath.replace(/\\/g, '/');
 
-        const { data, error } = await supabase.storage.from(bucketName).download(storagePath);
-        if (!error && data) {
-          const arrayBuf = await data.arrayBuffer();
-          pdfBuffer = Buffer.from(arrayBuf);
-        } else if (error) {
-          console.warn(`[Supabase Storage Stream Error] ${storagePath}:`, error.message);
+        const candidateStoragePaths = [
+          rawPath,
+          rawPath.startsWith('Notes/') ? rawPath : `Notes/${rawPath}`,
+          rawPath.startsWith('Notes/') ? rawPath.substring(6) : rawPath,
+          path.basename(rawPath)
+        ];
+
+        const uniqueCandidatePaths = [...new Set(candidateStoragePaths)].filter(Boolean);
+
+        for (const storagePath of uniqueCandidatePaths) {
+          const { data, error } = await supabase.storage.from(bucketName).download(storagePath);
+          if (!error && data) {
+            const arrayBuf = await data.arrayBuffer();
+            pdfBuffer = Buffer.from(arrayBuf);
+            console.log(`[Supabase Stream Success] Retrieved ${pdfBuffer.length} bytes for resource ${resource._id} via path '${storagePath}'`);
+            break;
+          } else if (error) {
+            console.warn(`[Supabase Storage Stream Warn] Resource ${resource._id} path '${storagePath}':`, error.message);
+          }
         }
       } catch (supabaseErr) {
-        console.warn(`[Supabase Stream Warn] ${resource._id}:`, supabaseErr.message);
+        console.warn(`[Supabase Stream Error] ${resource._id}:`, supabaseErr.message);
       }
     }
 
