@@ -681,20 +681,27 @@ exports.viewProtectedPDF = async (req, res) => {
     let pdfPath = null;
 
     if (resource.fileUrl && !resource.fileUrl.startsWith('http')) {
-      const safeFilename = path.basename(resource.fileUrl);
-      const testPath1 = path.resolve(path.join(resolvedProtectedDir, safeFilename));
-      const testPath2 = path.resolve(path.join(resolvedUploadsDir, safeFilename));
-
       const isSubpath = (parentDir, targetPath) => {
         const p = parentDir.toLowerCase();
         const t = targetPath.toLowerCase();
         return t === p || t.startsWith(p + path.sep) || t.startsWith(p.replace(/\\/g, '/') + '/');
       };
 
-      if (isValidPDFFile(testPath1) && isSubpath(resolvedProtectedDir, testPath1)) {
-        pdfPath = testPath1;
-      } else if (isValidPDFFile(testPath2) && isSubpath(resolvedUploadsDir, testPath2)) {
-        pdfPath = testPath2;
+      const cleanRelPath = resource.fileUrl.replace(/^[\/\\]+(uploads|protected_uploads)[\/\\]+/i, '').replace(/^[\/\\]+/, '');
+      const safeFilename = path.basename(resource.fileUrl);
+
+      const candidatePaths = [
+        path.resolve(path.join(resolvedProtectedDir, cleanRelPath)),
+        path.resolve(path.join(resolvedUploadsDir, cleanRelPath)),
+        path.resolve(path.join(resolvedProtectedDir, safeFilename)),
+        path.resolve(path.join(resolvedUploadsDir, safeFilename)),
+      ];
+
+      for (const cand of candidatePaths) {
+        if (isValidPDFFile(cand) && (isSubpath(resolvedProtectedDir, cand) || isSubpath(resolvedUploadsDir, cand))) {
+          pdfPath = cand;
+          break;
+        }
       }
     }
 
