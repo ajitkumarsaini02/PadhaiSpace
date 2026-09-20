@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from '../components/ThemeToggle';
@@ -7,6 +8,8 @@ import { User, Check, AlertCircle } from 'lucide-react';
 export default function Profile() {
   const { user, updateProfile } = useAuth();
   const { theme } = useTheme();
+  const navigate = useNavigate();
+
   const [name, setName] = useState(user?.name || '');
   const [college, setCollege] = useState(user?.college || '');
   const [password, setPassword] = useState('');
@@ -26,8 +29,11 @@ export default function Profile() {
 
       const res = await updateProfile(payload);
       if (res.success) {
-        setSuccessMsg('Profile updated successfully!');
+        setSuccessMsg('Profile updated successfully! Redirecting to Dashboard...');
         setPassword('');
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 800);
       } else {
         setErrorMsg(res.message || 'Failed to update profile');
       }
