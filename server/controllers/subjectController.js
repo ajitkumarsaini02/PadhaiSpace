@@ -5,8 +5,12 @@ const Unit = require('../models/Unit');
 // @route GET /api/subjects
 exports.getSubjects = async (req, res) => {
   try {
-    const { q } = req.query;
+    const { q, academicYear } = req.query;
     let subjectFilter = {};
+
+    if (academicYear && academicYear !== 'all') {
+      subjectFilter.academicYear = academicYear;
+    }
 
     if (q) {
       subjectFilter.$or = [
@@ -78,10 +82,11 @@ exports.getSubjectById = async (req, res) => {
 // @route POST /api/subjects (Admin)
 exports.createSubject = async (req, res) => {
   try {
-    const { name, code, description, thumbnail } = req.body;
+    const { name, code, description, thumbnail, academicYear } = req.body;
 
     const cleanCode = code ? code.trim().toUpperCase() : '';
     const cleanName = name ? name.trim() : '';
+    const validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
     if (!cleanName) {
       return res.status(400).json({ success: false, message: 'Subject name is required' });
@@ -89,12 +94,19 @@ exports.createSubject = async (req, res) => {
     if (!cleanCode) {
       return res.status(400).json({ success: false, message: 'Subject code is required' });
     }
+    if (!academicYear || !validYears.includes(academicYear)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Academic Year is required and must be one of: 1st Year, 2nd Year, 3rd Year, 4th Year',
+      });
+    }
 
     const subject = await Subject.create({
       name: cleanName,
       code: cleanCode,
       description: description || '',
       thumbnail: thumbnail || '',
+      academicYear,
     });
 
     res.status(201).json({ success: true, data: subject });
@@ -106,12 +118,23 @@ exports.createSubject = async (req, res) => {
 // @route PUT /api/subjects/:id (Admin)
 exports.updateSubject = async (req, res) => {
   try {
-    const { name, code, description, thumbnail } = req.body;
+    const { name, code, description, thumbnail, academicYear } = req.body;
     const updateData = {};
+    const validYears = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+
     if (name) updateData.name = name.trim();
     if (code) updateData.code = code.trim().toUpperCase();
     if (description !== undefined) updateData.description = description;
     if (thumbnail !== undefined) updateData.thumbnail = thumbnail;
+    if (academicYear) {
+      if (!validYears.includes(academicYear)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Academic Year must be one of: 1st Year, 2nd Year, 3rd Year, 4th Year',
+        });
+      }
+      updateData.academicYear = academicYear;
+    }
 
     const subject = await Subject.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!subject) return res.status(404).json({ success: false, message: 'Subject not found' });

@@ -14,11 +14,18 @@ export default function SubjectCard({ subject }) {
             <BookOpen className="w-4 h-4" />
           </div>
 
-          {subject.code ? (
-            <span className="tech-badge tech-badge-blue">
-              {subject.code}
-            </span>
-          ) : null}
+          <div className="flex items-center space-x-1.5">
+            {subject.academicYear && (
+              <span className="tech-badge tech-badge-purple">
+                {subject.academicYear}
+              </span>
+            )}
+            {subject.code && (
+              <span className="tech-badge tech-badge-blue">
+                {subject.code}
+              </span>
+            )}
+          </div>
         </div>
 
         <h3 className="text-base font-bold text-slate-900 dark:text-[#F8FAFC] group-hover:text-[#4F46E5] dark:group-hover:text-[#38BDF8] transition-colors line-clamp-1 mb-1.5">

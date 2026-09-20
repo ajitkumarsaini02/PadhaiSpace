@@ -67,8 +67,7 @@ export default function SubjectDetail() {
 
   const filteredResources = resources.filter((res) => {
     if (selectedUnit && res.unitId?._id !== selectedUnit && res.unitId !== selectedUnit) return false;
-    if (activeTab === 'notes') return res.type === 'notes';
-    if (activeTab === 'pdf') return res.type === 'pdf' || res.type === 'unit-pdf';
+    if (activeTab === 'notes') return ['notes', 'pdf', 'unit-pdf', 'Unit PDF'].includes(res.type);
     if (activeTab === 'pyq') return res.type === 'pyq';
     return true;
   });
@@ -186,7 +185,6 @@ export default function SubjectDetail() {
           {[
             { id: 'all', label: 'All Resources' },
             { id: 'notes', label: 'Study Notes' },
-            { id: 'pdf', label: 'Unit PDFs' },
             { id: 'pyq', label: 'PYQs' },
           ].map((tab) => (
             <button

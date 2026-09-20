@@ -30,6 +30,7 @@ export default function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'Notes', path: '/notes' },
     { name: 'PYQs', path: '/pyqs' },
+    { name: 'Syllabus', path: '/syllabus' },
     { name: 'Resources', path: '/resources' },
   ];
 

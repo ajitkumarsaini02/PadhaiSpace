@@ -45,8 +45,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/resources" className="text-[#94A3B8] hover:text-[#38BDF8] transition-colors">
-                  Syllabus & Exam Resources
+                <Link to="/syllabus" className="text-[#94A3B8] hover:text-[#38BDF8] transition-colors">
+                  Official Syllabi & Curriculum
                 </Link>
               </li>
             </ul>

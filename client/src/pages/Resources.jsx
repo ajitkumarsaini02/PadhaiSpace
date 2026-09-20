@@ -4,12 +4,13 @@ import ResourceCard from '../components/ResourceCard';
 import FilterBar from '../components/FilterBar';
 import EmptyState from '../components/EmptyState';
 import PDFViewerModal from '../components/PDFViewerModal';
+import Pagination from '../components/Pagination';
 import { CardSkeleton } from '../components/SkeletonLoader';
 import { resourceService, subjectService, unitService } from '../services/api';
-import { FolderKanban, RefreshCw, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FolderKanban, RefreshCw, AlertTriangle } from 'lucide-react';
 
 export default function Resources() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [resources, setResources] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [units, setUnits] = useState([]);
@@ -17,8 +18,9 @@ export default function Resources() {
   const [error, setError] = useState(null);
   const [activePDF, setActivePDF] = useState(null);
 
-  // Pagination
-  const [page, setPage] = useState(1);
+  // Read initial page from URL param to preserve state on back navigation
+  const initialPage = parseInt(searchParams.get('page'), 10) || 1;
+  const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
@@ -32,6 +34,21 @@ export default function Resources() {
     q: searchParams.get('q') || '',
     sort: 'newest',
   });
+
+  // Sync state to URL search parameters so Back navigation restores exact page & filters
+  const updateUrlParams = (newFilters, newPage) => {
+    const params = new URLSearchParams();
+    if (newPage > 1) params.set('page', String(newPage));
+    if (newFilters.subjectId) params.set('subjectId', newFilters.subjectId);
+    if (newFilters.unitId) params.set('unitId', newFilters.unitId);
+    if (newFilters.type) params.set('type', newFilters.type);
+    if (newFilters.academicYear) params.set('academicYear', newFilters.academicYear);
+    if (newFilters.paperYear) params.set('paperYear', newFilters.paperYear);
+    if (newFilters.source) params.set('source', newFilters.source);
+    if (newFilters.q) params.set('q', newFilters.q);
+
+    setSearchParams(params, { replace: true });
+  };
 
   // Fetch Subjects metadata
   useEffect(() => {
@@ -68,7 +85,6 @@ export default function Resources() {
         limit: 12,
       };
 
-      // Ensure no `subjectId=all` or `unitId=all` query parameters are sent!
       if (filters.subjectId && filters.subjectId !== 'all') params.subjectId = filters.subjectId;
       if (filters.unitId && filters.unitId !== 'all') params.unitId = filters.unitId;
       if (filters.type && filters.type !== 'all') params.type = filters.type;
@@ -99,17 +115,25 @@ export default function Resources() {
   }, [filters, page]);
 
   const handleFilterChange = (key, value) => {
-    setPage(1);
-    setFilters((prev) => ({
-      ...prev,
+    const newPage = 1;
+    const newFilters = {
+      ...filters,
       [key]: value === 'all' ? '' : value,
       ...(key === 'subjectId' ? { unitId: '' } : {}),
-    }));
+    };
+    setPage(newPage);
+    setFilters(newFilters);
+    updateUrlParams(newFilters, newPage);
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    updateUrlParams(filters, newPage);
+    window.scrollTo({ top: 180, behavior: 'smooth' });
   };
 
   const handleReset = () => {
-    setPage(1);
-    setFilters({
+    const defaultFilters = {
       subjectId: '',
       unitId: '',
       type: '',
@@ -118,7 +142,10 @@ export default function Resources() {
       source: '',
       q: '',
       sort: 'newest',
-    });
+    };
+    setPage(1);
+    setFilters(defaultFilters);
+    updateUrlParams(defaultFilters, 1);
   };
 
   return (
@@ -128,7 +155,7 @@ export default function Resources() {
           <FolderKanban className="w-7 h-7 text-[#4F46E5] dark:text-[#38BDF8] mr-2.5" /> Engineering Resource Library
         </h1>
         <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] mt-1">
-          Browse study notes, unit PDFs, PYQs, syllabi, and exam revision guides for all subjects ({totalCount} Resources)
+          Browse study notes, PYQs, syllabi, and study resources for all subjects ({totalCount} Resources)
         </p>
       </div>
 
@@ -177,29 +204,13 @@ export default function Resources() {
             ))}
           </div>
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-[#1E293B]">
-              <p className="text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
-                Page {page} of {totalPages} ({totalCount} total resources)
-              </p>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 text-xs font-mono font-bold bg-slate-100 dark:bg-[#1E293B] text-slate-700 dark:text-[#F8FAFC] rounded-xl disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-[#334155] transition-colors flex items-center"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Prev
-                </button>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1.5 text-xs font-mono font-bold bg-slate-100 dark:bg-[#1E293B] text-slate-700 dark:text-[#F8FAFC] rounded-xl disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-[#334155] transition-colors flex items-center"
-                >
-                  Next <ChevronRight className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={handlePageChange}
+            itemLabel="resources"
+          />
         </>
       )}
 

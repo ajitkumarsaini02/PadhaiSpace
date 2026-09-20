@@ -118,8 +118,9 @@ async function syncNotes() {
         name: subjectInfo.name,
         code: subjectInfo.code,
         description: `${subjectInfo.name} complete study notes and academic materials.`,
+        academicYear: subjectInfo.year,
       });
-      console.log(`[Subject Created] ${subject.name} (${subject.code})`);
+      console.log(`[Subject Created] ${subject.name} (${subject.code}) - ${subject.academicYear}`);
     }
 
     // 2. Fetch all PDF files inside folder recursively

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node seed/seedData.js"
+    "seed": "node seed/seedData.js",
+    "sync:supabase": "node syncSupabaseNotesToDb.js"
   },
   "dependencies": {
     "@supabase/server": "^1.7.0",

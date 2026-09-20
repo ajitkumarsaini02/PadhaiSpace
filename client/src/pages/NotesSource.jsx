@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import ResourceCard from '../components/ResourceCard';
 import FilterBar from '../components/FilterBar';
 import EmptyState from '../components/EmptyState';
 import PDFViewerModal from '../components/PDFViewerModal';
+import Pagination from '../components/Pagination';
 import { CardSkeleton } from '../components/SkeletonLoader';
 import { resourceService, subjectService } from '../services/api';
-import { ArrowLeft, BookOpen, Layers, RefreshCw, AlertTriangle, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
+import { ArrowLeft, Layers, RefreshCw, AlertTriangle, Calendar } from 'lucide-react';
 
 const SOURCE_NAMES = {
   'gateway-classes': 'Gateway Classes',
@@ -17,6 +18,7 @@ const SOURCE_NAMES = {
 
 export default function NotesSource() {
   const { sourceSlug } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const sourceName = SOURCE_NAMES[sourceSlug] || sourceSlug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
   const [notes, setNotes] = useState([]);
@@ -27,18 +29,29 @@ export default function NotesSource() {
   const [error, setError] = useState(null);
   const [activePDF, setActivePDF] = useState(null);
 
-  // Pagination state
-  const [page, setPage] = useState(1);
+  // Read initial page from URL param to preserve state on back navigation
+  const initialPage = parseInt(searchParams.get('page'), 10) || 1;
+  const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
-  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedYear, setSelectedYear] = useState(searchParams.get('academicYear') || '');
   const [filters, setFilters] = useState({
-    subjectId: '',
+    subjectId: searchParams.get('subjectId') || '',
     type: 'notes',
-    q: '',
+    q: searchParams.get('q') || '',
     sort: 'newest',
   });
+
+  const updateUrlParams = (acadYear, newFilters, newPage) => {
+    const params = new URLSearchParams();
+    if (newPage > 1) params.set('page', String(newPage));
+    if (acadYear) params.set('academicYear', acadYear);
+    if (newFilters.subjectId) params.set('subjectId', newFilters.subjectId);
+    if (newFilters.q) params.set('q', newFilters.q);
+
+    setSearchParams(params, { replace: true });
+  };
 
   // 1. Fetch available academic years dynamically from MongoDB for this source
   const fetchAvailableYears = async () => {
@@ -112,19 +125,32 @@ export default function NotesSource() {
   }, [sourceSlug, selectedYear, filters, page]);
 
   const handleYearSelect = (year) => {
+    const newYr = selectedYear === year ? '' : year;
+    setSelectedYear(newYr);
     setPage(1);
-    setSelectedYear((prev) => (prev === year ? '' : year));
+    updateUrlParams(newYr, filters, 1);
   };
 
   const handleFilterChange = (key, value) => {
-    setPage(1);
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    const newPage = 1;
+    const newFilters = { ...filters, [key]: value };
+    setPage(newPage);
+    setFilters(newFilters);
+    updateUrlParams(selectedYear, newFilters, newPage);
+  };
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
+    updateUrlParams(selectedYear, filters, newPage);
+    window.scrollTo({ top: 250, behavior: 'smooth' });
   };
 
   const handleReset = () => {
+    const defaultFilters = { subjectId: '', type: 'notes', q: '', sort: 'newest' };
     setPage(1);
     setSelectedYear('');
-    setFilters({ subjectId: '', type: 'notes', q: '', sort: 'newest' });
+    setFilters(defaultFilters);
+    updateUrlParams('', defaultFilters, 1);
   };
 
   return (
@@ -160,7 +186,7 @@ export default function NotesSource() {
         </div>
       </div>
 
-      {/* DYNAMIC ACADEMIC YEAR SELECTOR (MONGODB DRIVEN) */}
+      {/* DYNAMIC ACADEMIC YEAR SELECTOR */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-900 dark:text-[#F8FAFC] uppercase tracking-wider flex items-center">
@@ -186,6 +212,7 @@ export default function NotesSource() {
               onClick={() => {
                 setPage(1);
                 setSelectedYear('');
+                updateUrlParams('', filters, 1);
               }}
               className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
                 selectedYear === ''
@@ -259,30 +286,13 @@ export default function NotesSource() {
             ))}
           </div>
 
-          {/* PAGINATION CONTROLS */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-[#1E293B]">
-              <p className="text-xs font-mono text-slate-500 dark:text-[#94A3B8]">
-                Page {page} of {totalPages} ({totalCount} total notes)
-              </p>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 text-xs font-mono font-bold bg-slate-100 dark:bg-[#1E293B] text-slate-700 dark:text-[#F8FAFC] rounded-xl disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-[#334155] transition-colors flex items-center"
-                >
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Prev
-                </button>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1.5 text-xs font-mono font-bold bg-slate-100 dark:bg-[#1E293B] text-slate-700 dark:text-[#F8FAFC] rounded-xl disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-[#334155] transition-colors flex items-center"
-                >
-                  Next <ChevronRight className="w-4 h-4 ml-1" />
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={handlePageChange}
+            itemLabel="notes"
+          />
         </>
       )}
 

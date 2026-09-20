@@ -7,16 +7,13 @@ export default function ResourceCard({ resource }) {
   const getTypeBadge = (type) => {
     switch (type) {
       case 'notes':
-        return { label: 'Notes', cls: 'tech-badge-blue' };
       case 'pdf':
       case 'unit-pdf':
-        return { label: 'Unit PDF', cls: 'tech-badge-cyan' };
+        return { label: 'Notes', cls: 'tech-badge-blue' };
       case 'pyq':
         return { label: 'PYQ', cls: 'tech-badge-purple' };
       case 'syllabus':
         return { label: 'Syllabus', cls: 'tech-badge-blue' };
-      case 'exam-resource':
-        return { label: 'Exam Resource', cls: 'tech-badge-green' };
       default:
         return { label: 'Resource', cls: 'tech-badge-cyan' };
     }

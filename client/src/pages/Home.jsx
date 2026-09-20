@@ -330,7 +330,7 @@ export default function Home() {
 
           {/* Filter Pills */}
           <div className="flex items-center space-x-2 overflow-x-auto pb-1">
-            {['All', 'Notes', 'Unit PDFs', 'PYQs', 'Syllabus'].map((type) => (
+            {['All', 'Notes', 'PYQs', 'Syllabus'].map((type) => (
               <button
                 key={type}
                 onClick={() => setResourceFilter(type)}

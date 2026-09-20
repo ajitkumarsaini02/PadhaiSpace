@@ -6,6 +6,7 @@ const {
   toggleUserStatus,
   globalAdminSearch,
   getAuditLogs,
+  syncSupabaseStorage,
 } = require('../controllers/adminController');
 const { getAdminActivities, getActivityStats } = require('../controllers/activityController');
 const { protect, adminOnly } = require('../middleware/auth');
@@ -16,6 +17,7 @@ router.get('/search', protect, adminOnly, globalAdminSearch);
 router.get('/users', protect, adminOnly, getUsers);
 router.put('/users/:id/status', protect, adminOnly, toggleUserStatus);
 router.get('/audit-logs', protect, adminOnly, getAuditLogs);
+router.post('/sync-supabase', protect, adminOnly, syncSupabaseStorage);
 
 // Resource Activity Audit Routes (Admin Only)
 router.get('/resource-activities', protect, adminOnly, getAdminActivities);

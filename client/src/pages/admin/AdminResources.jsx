@@ -32,12 +32,6 @@ const RESOURCE_TYPES = [
     badgeClass: 'tech-badge-cyan',
   },
   {
-    id: 'unit-pdf',
-    label: 'Unit PDF',
-    helper: 'Upload a PDF specifically for one subject unit.',
-    badgeClass: 'tech-badge-blue',
-  },
-  {
     id: 'pyq',
     label: 'Previous Year Question Paper',
     helper: 'Upload a previous year university or examination question paper.',
@@ -48,18 +42,6 @@ const RESOURCE_TYPES = [
     label: 'Syllabus',
     helper: 'Upload the syllabus for a subject or academic year.',
     badgeClass: 'tech-badge-green',
-  },
-  {
-    id: 'exam-resource',
-    label: 'Exam Resource',
-    helper: 'Upload exam preparation material, revision notes, or model papers.',
-    badgeClass: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 tech-badge',
-  },
-  {
-    id: 'pdf',
-    label: 'PDF Document',
-    helper: 'Upload a general reference PDF document.',
-    badgeClass: 'bg-slate-100 dark:bg-[#1E293B] text-slate-700 dark:text-[#94A3B8] border border-slate-200 dark:border-[#334155] tech-badge',
   },
   {
     id: 'other',

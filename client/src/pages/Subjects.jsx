@@ -5,7 +5,7 @@ import FilterBar from '../components/FilterBar';
 import EmptyState from '../components/EmptyState';
 import { CardSkeleton } from '../components/SkeletonLoader';
 import { subjectService } from '../services/api';
-import { GraduationCap, Layers, BookOpen, FlaskConical, Sparkles, Award } from 'lucide-react';
+import { BookOpen, GraduationCap, Layers } from 'lucide-react';
 
 export default function Subjects() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,7 +13,7 @@ export default function Subjects() {
   const [loading, setLoading] = useState(true);
 
   const initialFilters = {
-    subjectType: searchParams.get('subjectType') || searchParams.get('type') || '',
+    academicYear: searchParams.get('academicYear') || searchParams.get('year') || '',
     q: searchParams.get('q') || '',
   };
 
@@ -24,11 +24,13 @@ export default function Subjects() {
       try {
         setLoading(true);
         const params = {};
-        if (filters.subjectType) params.subjectType = filters.subjectType;
+        if (filters.academicYear && filters.academicYear !== 'all') {
+          params.academicYear = filters.academicYear;
+        }
         if (filters.q) params.q = filters.q;
 
         const res = await subjectService.getAll(params);
-        if (res.success) setSubjects(res.data);
+        if (res.success) setSubjects(res.data || []);
       } catch (err) {
         console.error('Fetch subjects error:', err);
       } finally {
@@ -44,28 +46,23 @@ export default function Subjects() {
   };
 
   const handleReset = () => {
-    setFilters({ subjectType: '', q: '' });
+    setFilters({ academicYear: '', q: '' });
     setSearchParams({});
   };
 
-  const coreSubjects = subjects.filter((s) => (s.subjectType || s.type || '').toLowerCase() === 'theory');
-  const electiveSubjects = subjects.filter((s) => (s.subjectType || s.type || '').toLowerCase() === 'elective');
-  const labSubjects = subjects.filter((s) => (s.subjectType || s.type || '').toLowerCase() === 'lab');
-  const otherSubjects = subjects.filter((s) => (s.subjectType || s.type || '').toLowerCase() === 'other');
-
-  const showGroupedSections = !filters.subjectType && !filters.q;
+  const academicYears = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+  const isFiltered = Boolean(filters.academicYear || filters.q);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 text-slate-900 dark:text-[#F8FAFC]">
       {/* Header Banner */}
       <div className="tech-card p-6 sm:p-8 tech-grid-pattern relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-[#F8FAFC] tracking-tight">
-            Academic Subjects
+            Academic Engineering Subjects
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-[#94A3B8] mt-1">
-            Course codes, syllabus units, lecture notes, and previous year question papers
+            Organized year-wise — Course codes, syllabus units, lecture notes, and exam papers
           </p>
         </div>
 
@@ -83,7 +80,6 @@ export default function Subjects() {
         onChange={handleFilterChange}
         onReset={handleReset}
         showTypeFilter={false}
-        showSubjectTypeFilter={true}
       />
 
       {/* Content */}
@@ -91,98 +87,47 @@ export default function Subjects() {
         <CardSkeleton count={9} />
       ) : subjects.length === 0 ? (
         <EmptyState
-          title="No subjects found"
-          message="Try adjusting your search query or subject type filter."
+          title="No subjects available yet."
+          message="No engineering subjects were found matching your criteria in the database."
           actionLabel="Clear Filters"
           onAction={handleReset}
         />
-      ) : showGroupedSections ? (
-        <div className="space-y-10">
-          {/* Core Theory Subjects */}
-          {coreSubjects.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-[#1E293B] pb-2">
-                <BookOpen className="w-5 h-5 text-[#4F46E5] dark:text-[#38BDF8]" />
-                <h2 className="text-lg font-bold text-slate-900 dark:text-[#F8FAFC]">
-                  Core Theory Subjects
-                </h2>
-                <span className="tech-badge tech-badge-blue">
-                  {coreSubjects.length}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {coreSubjects.map((subj) => (
-                  <SubjectCard key={subj._id} subject={subj} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Elective Subjects */}
-          {electiveSubjects.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-[#1E293B] pb-2">
-                <Sparkles className="w-5 h-5 text-[#2563EB] dark:text-[#C084FC]" />
-                <h2 className="text-lg font-bold text-slate-900 dark:text-[#F8FAFC]">
-                  Elective Subjects
-                </h2>
-                <span className="tech-badge tech-badge-purple">
-                  {electiveSubjects.length}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {electiveSubjects.map((subj) => (
-                  <SubjectCard key={subj._id} subject={subj} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Lab Courses */}
-          {labSubjects.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-[#1E293B] pb-2">
-                <FlaskConical className="w-5 h-5 text-[#16A34A] dark:text-[#34D399]" />
-                <h2 className="text-lg font-bold text-slate-900 dark:text-[#F8FAFC]">
-                  Practical & Laboratory Courses
-                </h2>
-                <span className="tech-badge tech-badge-green">
-                  {labSubjects.length}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {labSubjects.map((subj) => (
-                  <SubjectCard key={subj._id} subject={subj} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Other Courses */}
-          {otherSubjects.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2 border-b border-slate-200 dark:border-[#1E293B] pb-2">
-                <Award className="w-5 h-5 text-[#F59E0B]" />
-                <h2 className="text-lg font-bold text-slate-900 dark:text-[#F8FAFC]">
-                  Common & Other Subjects
-                </h2>
-                <span className="tech-badge tech-badge-cyan">
-                  {otherSubjects.length}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {otherSubjects.map((subj) => (
-                  <SubjectCard key={subj._id} subject={subj} />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
+      ) : isFiltered ? (
+        /* Flat Grid when search or explicit year filter is active */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {subjects.map((subj) => (
             <SubjectCard key={subj._id} subject={subj} />
           ))}
+        </div>
+      ) : (
+        /* Year-Wise Sections */
+        <div className="space-y-10">
+          {academicYears.map((year) => {
+            const yearSubjects = subjects.filter((s) => s.academicYear === year);
+            if (yearSubjects.length === 0) return null;
+
+            return (
+              <div key={year} className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1E293B] pb-2.5">
+                  <div className="flex items-center space-x-2.5">
+                    <GraduationCap className="w-5 h-5 text-[#4F46E5] dark:text-[#38BDF8]" />
+                    <h2 className="text-xl font-extrabold text-slate-900 dark:text-[#F8FAFC]">
+                      {year}
+                    </h2>
+                    <span className="tech-badge tech-badge-purple">
+                      {yearSubjects.length} {yearSubjects.length === 1 ? 'Subject' : 'Subjects'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {yearSubjects.map((subj) => (
+                    <SubjectCard key={subj._id} subject={subj} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

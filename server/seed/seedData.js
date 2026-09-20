@@ -18,21 +18,21 @@ const seedDatabase = async () => {
     console.log('[Seeder] Connected to database. Bootstrapping PadhaiSpace Subject -> Unit -> Resource architecture...');
 
     const masterSubjectsData = [
-      { name: 'Data Structure', code: 'BCS301', desc: 'Arrays, Linked Lists, Stacks, Queues, Trees, BST, Graphs, Sorting & Hashing Algorithms' },
-      { name: 'Computer Organization and Architecture', code: 'BCS302', desc: 'ALU Design, Instruction Pipeline, Pipelining, Cache Memory, and I/O Interfacing' },
-      { name: 'Discrete Structures & Theory of Logic', code: 'BCS303', desc: 'Set Theory, Propositional Logic, Graph Theory, Combinatorics, and Group Theory' },
-      { name: 'Operating System', code: 'BCS401', desc: 'Processes, CPU Scheduling, Synchronization, Deadlocks, Memory Paging, and File Systems' },
-      { name: 'Theory of Automata and Formal Languages', code: 'BCS402', desc: 'DFA, NFA, Regular Expressions, Context-Free Grammars, Pushdown Automata & Turing Machines' },
-      { name: 'Object Oriented Programming with Java', code: 'BCS403', desc: 'Java OOPs, Classes, Inheritance, Interfaces, Multithreading, Exception Handling & Collections' },
-      { name: 'Database Management System', code: 'BCS501', desc: 'ER Diagrams, Relational Algebra, SQL Queries, Normalization, ACID Transactions & Indexing' },
-      { name: 'Web Technology', code: 'BCS502', desc: 'Client-Server Architecture, JavaScript ES6+, Node.js, Express.js, REST APIs & Web Security' },
-      { name: 'Design and Analysis of Algorithm', code: 'BCS503', desc: 'Asymptotic Analysis, Divide & Conquer, Greedy Algorithms, Dynamic Programming, NP-Completeness' },
-      { name: 'Software Engineering', code: 'BCS601', desc: 'SDLC Models, Requirements Engineering, UML Modeling, Software Testing, Agile & DevOps' },
-      { name: 'Compiler Design', code: 'BCS602', desc: 'Lexical Analysis, Flex/Bison, Syntax Directed Translation, Code Generation & Optimization' },
-      { name: 'Computer Networks', code: 'BCS603', desc: 'OSI vs TCP/IP Architecture, Data Link Protocol, IPv4/v6 Addressing, Routing & Transport TCP/UDP' },
-      { name: 'Artificial Intelligence', code: 'BCS701', desc: 'State Space Search (A*, Minimax), Constraint Satisfaction, First-Order Logic, Expert Systems' },
-      { name: 'Deep Learning', code: 'BAI601', desc: 'Convolutional Neural Networks (CNN), Recurrent Networks (RNN, LSTM), Transformers & PyTorch' },
-      { name: 'Big Data Analytics', code: 'BDS601', desc: 'HDFS, Apache Spark DataFrames, PySpark, Distributed Graph Processing, NoSQL Databases' },
+      { name: 'Data Structure', code: 'BCS301', desc: 'Arrays, Linked Lists, Stacks, Queues, Trees, BST, Graphs, Sorting & Hashing Algorithms', academicYear: '2nd Year' },
+      { name: 'Computer Organization and Architecture', code: 'BCS302', desc: 'ALU Design, Instruction Pipeline, Pipelining, Cache Memory, and I/O Interfacing', academicYear: '2nd Year' },
+      { name: 'Discrete Structures & Theory of Logic', code: 'BCS303', desc: 'Set Theory, Propositional Logic, Graph Theory, Combinatorics, and Group Theory', academicYear: '2nd Year' },
+      { name: 'Operating System', code: 'BCS401', desc: 'Processes, CPU Scheduling, Synchronization, Deadlocks, Memory Paging, and File Systems', academicYear: '2nd Year' },
+      { name: 'Theory of Automata and Formal Languages', code: 'BCS402', desc: 'DFA, NFA, Regular Expressions, Context-Free Grammars, Pushdown Automata & Turing Machines', academicYear: '2nd Year' },
+      { name: 'Object Oriented Programming with Java', code: 'BCS403', desc: 'Java OOPs, Classes, Inheritance, Interfaces, Multithreading, Exception Handling & Collections', academicYear: '2nd Year' },
+      { name: 'Database Management System', code: 'BCS501', desc: 'ER Diagrams, Relational Algebra, SQL Queries, Normalization, ACID Transactions & Indexing', academicYear: '3rd Year' },
+      { name: 'Web Technology', code: 'BCS502', desc: 'Client-Server Architecture, JavaScript ES6+, Node.js, Express.js, REST APIs & Web Security', academicYear: '3rd Year' },
+      { name: 'Design and Analysis of Algorithm', code: 'BCS503', desc: 'Asymptotic Analysis, Divide & Conquer, Greedy Algorithms, Dynamic Programming, NP-Completeness', academicYear: '3rd Year' },
+      { name: 'Software Engineering', code: 'BCS601', desc: 'SDLC Models, Requirements Engineering, UML Modeling, Software Testing, Agile & DevOps', academicYear: '3rd Year' },
+      { name: 'Compiler Design', code: 'BCS602', desc: 'Lexical Analysis, Flex/Bison, Syntax Directed Translation, Code Generation & Optimization', academicYear: '3rd Year' },
+      { name: 'Computer Networks', code: 'BCS603', desc: 'OSI vs TCP/IP Architecture, Data Link Protocol, IPv4/v6 Addressing, Routing & Transport TCP/UDP', academicYear: '3rd Year' },
+      { name: 'Artificial Intelligence', code: 'BCS701', desc: 'State Space Search (A*, Minimax), Constraint Satisfaction, First-Order Logic, Expert Systems', academicYear: '4th Year' },
+      { name: 'Deep Learning', code: 'BAI601', desc: 'Convolutional Neural Networks (CNN), Recurrent Networks (RNN, LSTM), Transformers & PyTorch', academicYear: '3rd Year' },
+      { name: 'Big Data Analytics', code: 'BDS601', desc: 'HDFS, Apache Spark DataFrames, PySpark, Distributed Graph Processing, NoSQL Databases', academicYear: '3rd Year' },
     ];
 
     console.log('[Seeder] Upserting Master Subjects...');
@@ -44,6 +44,7 @@ const seedDatabase = async () => {
           name: sub.name,
           code: sub.code,
           description: sub.desc,
+          academicYear: sub.academicYear,
         },
         { upsert: true, new: true }
       );

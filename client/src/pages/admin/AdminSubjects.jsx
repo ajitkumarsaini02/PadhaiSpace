@@ -9,10 +9,12 @@ export default function AdminSubjects() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedYearFilter, setSelectedYearFilter] = useState('all');
 
   const [form, setForm] = useState({
     name: '',
     code: '',
+    academicYear: '1st Year',
     description: '',
     thumbnail: '',
   });
@@ -37,7 +39,7 @@ export default function AdminSubjects() {
 
   const resetForm = () => {
     setEditingId(null);
-    setForm({ name: '', code: '', description: '', thumbnail: '' });
+    setForm({ name: '', code: '', academicYear: '1st Year', description: '', thumbnail: '' });
   };
 
   const startEdit = (s) => {
@@ -45,6 +47,7 @@ export default function AdminSubjects() {
     setForm({
       name: s.name || '',
       code: s.code || '',
+      academicYear: s.academicYear || '1st Year',
       description: s.description || '',
       thumbnail: s.thumbnail || '',
     });
@@ -57,6 +60,10 @@ export default function AdminSubjects() {
 
     if (!form.name.trim() || !form.code.trim()) {
       setMsg({ type: 'error', text: 'Subject Name and Subject Code are required' });
+      return;
+    }
+    if (!form.academicYear) {
+      setMsg({ type: 'error', text: 'Academic Year is required' });
       return;
     }
 
@@ -93,21 +100,24 @@ export default function AdminSubjects() {
   };
 
   const displayedSubjects = subjects.filter((s) => {
+    if (selectedYearFilter !== 'all' && s.academicYear !== selectedYearFilter) {
+      return false;
+    }
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
     return (
       s.name?.toLowerCase().includes(q) ||
       s.code?.toLowerCase().includes(q) ||
-      s.description?.toLowerCase().includes(q)
+      s.description?.toLowerCase().includes(q) ||
+      s.academicYear?.toLowerCase().includes(q)
     );
   });
 
   return (
-
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-slate-900 dark:text-[#F8FAFC]">
       <AdminNav
         title="Subject Management"
-        subtitle="Create, edit, and manage independent engineering subjects"
+        subtitle="Create, edit, and organize engineering subjects year-wise"
       />
 
       {msg.text && (
@@ -125,7 +135,7 @@ export default function AdminSubjects() {
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC] mb-1">Subject Name *</label>
               <input
@@ -148,6 +158,21 @@ export default function AdminSubjects() {
                 required
                 className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-semibold uppercase"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono font-bold text-slate-800 dark:text-[#F8FAFC] mb-1">Academic Year *</label>
+              <select
+                value={form.academicYear}
+                onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+                required
+                className="w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-mono font-bold"
+              >
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
             </div>
           </div>
 
@@ -195,27 +220,41 @@ export default function AdminSubjects() {
         </form>
       </div>
 
-      {/* Existing Subjects List with Search */}
+      {/* Existing Subjects List with Search & Year Filter */}
       <div className="tech-card overflow-hidden space-y-4 p-4 bg-white dark:bg-[#0F172A] border-slate-200 dark:border-[#1E293B]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200 dark:border-[#1E293B]">
           <div className="font-mono font-bold text-xs flex items-center text-slate-900 dark:text-[#F8FAFC]">
             <BookOpen className="w-4 h-4 mr-2 text-blue-600 dark:text-[#38BDF8]" /> All Subjects ({displayedSubjects.length})
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 dark:text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search subjects..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-mono"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={selectedYearFilter}
+              onChange={(e) => setSelectedYearFilter(e.target.value)}
+              className="px-3 py-1.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-mono font-bold"
+            >
+              <option value="all">All Academic Years</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+
+            <div className="relative w-full sm:w-56">
+              <Search className="w-3.5 h-3.5 text-slate-400 dark:text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search subjects..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-50 dark:bg-[#070A12] text-slate-900 dark:text-[#F8FAFC] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-blue-500 dark:focus:border-[#38BDF8] font-mono"
+              />
+            </div>
           </div>
         </div>
 
         {displayedSubjects.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-500 dark:text-[#94A3B8] font-mono">No subjects found.</div>
+          <div className="py-8 text-center text-xs text-slate-500 dark:text-[#94A3B8] font-mono">No subjects available yet.</div>
         ) : (
           <div className="divide-y divide-slate-200 dark:divide-[#1E293B]">
             {displayedSubjects.map((s) => (
@@ -226,6 +265,11 @@ export default function AdminSubjects() {
                     {s.code && (
                       <span className="tech-badge tech-badge-blue">
                         {s.code}
+                      </span>
+                    )}
+                    {s.academicYear && (
+                      <span className="tech-badge tech-badge-purple">
+                        {s.academicYear}
                       </span>
                     )}
                   </div>

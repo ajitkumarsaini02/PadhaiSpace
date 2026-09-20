@@ -8,6 +8,7 @@ import SubjectDetail from './pages/SubjectDetail';
 import Notes from './pages/Notes';
 import NotesSource from './pages/NotesSource';
 import PYQs from './pages/PYQs';
+import Syllabus from './pages/Syllabus';
 import Resources from './pages/Resources';
 import ResourceDetail from './pages/ResourceDetail';
 import SearchResults from './pages/SearchResults';
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/notes" element={<Notes />} />
           <Route path="/notes/source/:sourceSlug" element={<NotesSource />} />
           <Route path="/pyqs" element={<PYQs />} />
+          <Route path="/syllabus" element={<Syllabus />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/resources/:id" element={<ResourceDetail />} />
           <Route path="/resources/:id/view" element={<PDFReader />} />

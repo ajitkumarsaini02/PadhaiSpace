@@ -73,9 +73,9 @@ async function testSearchResourceSubject() {
 
   // 2. TEST SUBJECT DETAIL & MONGO COUNTING
   console.log('\nStep 3: Testing Subject Detail API (GET /api/subjects/:id)...');
-  const sampleSubject = await Subject.findOne({ code: 'BCS501' });
+  const sampleSubject = await Subject.findOne({ $or: [{ code: 'DBMS' }, { code: 'BCS501' }] });
   if (!sampleSubject) {
-    throw new Error('DBMS subject (BCS501) not found in MongoDB!');
+    throw new Error('DBMS subject not found in MongoDB!');
   }
 
   const subjReqRes = makeReqRes({}, { id: sampleSubject._id.toString() });

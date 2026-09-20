@@ -9,6 +9,27 @@ export default function FilterBar({
   showTypeFilter = true,
   showSubjectTypeFilter = false,
 }) {
+  // Dynamically filter subjects by selected Academic Year
+  const filteredSubjects = React.useMemo(() => {
+    if (!filters?.academicYear || filters.academicYear === 'all' || filters.academicYear === '') {
+      return subjects;
+    }
+    return subjects.filter((s) => s.academicYear === filters.academicYear);
+  }, [subjects, filters?.academicYear]);
+
+  const handleYearChange = (e) => {
+    const newYear = e.target.value;
+    onChange('academicYear', newYear);
+
+    // If currently selected subject doesn't belong to the newly selected year, reset subjectId
+    if (filters.subjectId) {
+      const currentSubj = subjects.find((s) => s._id === filters.subjectId);
+      if (currentSubj && newYear && newYear !== 'all' && currentSubj.academicYear !== newYear) {
+        onChange('subjectId', '');
+      }
+    }
+  };
+
   return (
     <div className="tech-card p-4 mb-6">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3">
@@ -33,8 +54,10 @@ export default function FilterBar({
               onChange={(e) => onChange('subjectId', e.target.value)}
               className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC] max-w-[200px] truncate"
             >
-              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Subjects</option>
-              {subjects.map((s) => (
+              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+                {filters?.academicYear && filters.academicYear !== 'all' ? `All ${filters.academicYear} Subjects` : 'All Subjects'}
+              </option>
+              {filteredSubjects.map((s) => (
                 <option key={s._id} value={s._id} className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
                   {s.name}
                 </option>
@@ -51,10 +74,8 @@ export default function FilterBar({
             >
               <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Resource Types</option>
               <option value="notes" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Study Notes</option>
-              <option value="pdf" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Unit PDFs</option>
               <option value="pyq" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">PYQs (Past Papers)</option>
               <option value="syllabus" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Syllabus</option>
-              <option value="exam-resource" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Exam Resources</option>
             </select>
           )}
 
@@ -62,7 +83,7 @@ export default function FilterBar({
           {filters.academicYear !== undefined && (
             <select
               value={filters.academicYear || ''}
-              onChange={(e) => onChange('academicYear', e.target.value)}
+              onChange={handleYearChange}
               className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC]"
             >
               <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Years</option>
