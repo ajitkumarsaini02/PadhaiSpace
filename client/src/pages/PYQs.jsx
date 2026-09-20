@@ -47,9 +47,11 @@ export default function PYQs() {
     setSearchParams(params, { replace: true });
   };
 
-  // 1. Fetch available Subjects having PYQs or All subjects
+  const [sources, setSources] = useState([]);
+
+  // 1. Fetch available Subjects
   useEffect(() => {
-    const fetchMetadata = async () => {
+    const fetchSubjects = async () => {
       try {
         const sRes = await subjectService.getAll();
         if (sRes.success) setSubjects(sRes.data);
@@ -57,8 +59,27 @@ export default function PYQs() {
         console.warn('Metadata fetch warning:', err.message);
       }
     };
-    fetchMetadata();
+    fetchSubjects();
   }, []);
+
+  // Fetch sources dynamically based on active PYQ filters
+  useEffect(() => {
+    const fetchSources = async () => {
+      try {
+        const params = { type: 'pyq' };
+        if (selectedAcademicYear) params.academicYear = selectedAcademicYear;
+        if (selectedPaperYear) params.paperYear = selectedPaperYear;
+        if (filters.subjectId) params.subjectId = filters.subjectId;
+        if (filters.q) params.q = filters.q;
+
+        const srcRes = await resourceService.getSources(params);
+        if (srcRes.success) setSources(srcRes.data);
+      } catch (err) {
+        console.warn('Sources fetch warning:', err.message);
+      }
+    };
+    fetchSources();
+  }, [selectedAcademicYear, selectedPaperYear, filters.subjectId, filters.q]);
 
   // 2. Fetch available Paper Years dynamically from MongoDB whenever Academic Year changes
   useEffect(() => {
@@ -313,7 +334,9 @@ export default function PYQs() {
           onChange={handleFilterChange}
           onReset={handleReset}
           subjects={subjects}
+          sources={sources}
           showTypeFilter={false}
+          showSourceFilter={true}
         />
       </div>
 

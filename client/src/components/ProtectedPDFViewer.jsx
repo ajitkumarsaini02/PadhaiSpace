@@ -722,69 +722,6 @@ export default function ProtectedPDFViewer({ pdfArrayBuffer, title, resourceId }
             </div>
           )}
 
-          {/* OFFICIAL LEGAL & COPYRIGHT DISCLAIMER BOX (At top of document) */}
-          <div className="w-full max-w-3xl mb-4 bg-[#160B0E]/95 border-2 border-rose-900/80 rounded-2xl p-4 sm:p-6 text-rose-100 shadow-2xl space-y-3 font-sans select-none shrink-0">
-            {/* Header Tag line */}
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-900/60 pb-2.5">
-              <div className="flex items-center space-x-2 text-rose-400 font-mono font-bold text-xs">
-                <ShieldAlert className="w-4 h-4 text-rose-500" />
-                <span>SECURITY NOTICE • PAGE {pageNumber}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="hidden sm:inline-flex items-center space-x-1.5 bg-rose-500/10 border border-rose-500/30 px-3 py-0.5 rounded-full text-[10px] font-mono font-extrabold text-rose-400 tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping mr-1"></span>
-                  FORENSIC TRACKING ACTIVE
-                </span>
-                <button
-                  onClick={() => setShowDisclaimer(!showDisclaimer)}
-                  className="text-[10px] font-mono font-extrabold text-rose-300 hover:text-white bg-rose-500/20 border border-rose-500/40 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
-                >
-                  {showDisclaimer ? 'Hide Legal Details' : 'Show Legal Disclaimer'}
-                </button>
-              </div>
-            </div>
-
-            {showDisclaimer && (
-              <>
-                {/* Disclaimer Title */}
-                <h2 className="text-base sm:text-xl font-black text-white tracking-tight uppercase">
-                  OFFICIAL LEGAL & COPYRIGHT DISCLAIMER
-                </h2>
-
-                {/* 4 Points */}
-                <ol className="space-y-2.5 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal list-decimal pl-4">
-                  <li>
-                    <strong className="text-white">Unauthorized Screenshots & Sharing Prohibited:</strong> Taking screenshots, screen recordings, extracting, copying, or forwarding any part of this document via WhatsApp, Telegram, Google Drive, or any public/private media is strictly prohibited.
-                  </li>
-                  <li>
-                    <strong className="text-white">Identity Leak Risk:</strong> Every single page of this document contains cryptographic invisible and visible digital watermarks tied to your personal registered account (<span className="text-blue-400 font-mono font-bold">{userEmail}</span>) and Device IP (<span className="text-blue-400 font-mono font-bold">{userIp}</span>). If any screenshot is taken and shared, your personal credentials will be leaked publicly and traced back to you immediately.
-                  </li>
-                  <li>
-                    <strong className="text-white">Transaction ID & Traceability:</strong> We can track and identify you directly by your unique Session ID / Student ID, registered account records, and access logs. Every document access is cryptographically linked to your transaction & session history in our database.
-                  </li>
-                  <li>
-                    <strong className="text-white">Strict Legal Actions:</strong> Any copyright infringement, unauthorized sharing, or attempt to bypass security protections is punishable under the <strong className="text-amber-400">Information Technology Act (IT Act 2000, Sections 43, 66 & 72)</strong> and the <strong className="text-amber-400">Indian Copyright Act 1957</strong>, leading to permanent blacklisting, forfeiture of all access, and criminal/civil legal prosecution.
-                  </li>
-                </ol>
-
-                {/* Footer info line */}
-                <div className="pt-2.5 border-t border-rose-900/60 flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-400 gap-2">
-                  <div>Document: <span className="text-white font-bold">{title}</span></div>
-                  <div>Licensed to: <span className="text-blue-400 font-bold">{userEmail}</span></div>
-                  <div className="text-rose-400 font-bold flex items-center">
-                    <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" /> Protected by PadhaiSpace Security Shield
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* RED TICKER WARNING BANNER */}
-          <div className="w-full max-w-3xl mb-6 bg-rose-950/90 border border-rose-800 text-rose-200 py-2.5 px-4 rounded-xl text-[10px] sm:text-[11px] font-mono font-bold text-center tracking-wide uppercase shadow-md flex items-center justify-center space-x-2 shrink-0">
-            <span className="w-2 h-2 bg-rose-500 rounded-full animate-ping shrink-0"></span>
-            <span className="truncate">LEGAL WARNING: SCREENSHOTS & SHARING PROHIBITED • TRACEABLE VIA TRANSACTION ID & EMAIL ({userEmail})</span>
-          </div>
-
           {/* CONTINUOUS VERTICAL SCROLL OF ALL PDF PAGES */}
           <div className="w-full flex flex-col items-center">
             {Array.from({ length: numPages }, (_, i) => i + 1).map((p) => (

@@ -22,7 +22,7 @@ router.get('/meta/academic-years', getAcademicYears);
 router.get('/meta/paper-years', getPaperYears);
 router.get('/meta/pyq-subjects', getPYQSubjects);
 router.get('/:id', getResourceById);
-router.get('/:id/view', optionalAuth, viewProtectedPDF);
+router.get('/:id/view', protect, viewProtectedPDF);
 router.post('/:id/view', incrementViews);
 
 router.post('/', protect, adminOnly, upload.single('file'), createResource);

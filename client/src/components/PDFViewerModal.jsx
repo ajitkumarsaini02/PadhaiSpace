@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { X, FileText, BookOpen } from 'lucide-react';
+import { X, FileText, BookOpen, Lock, LogIn } from 'lucide-react';
 import BookmarkButton from './BookmarkButton';
 import { resourceService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function PDFViewerModal({ resource, onClose }) {
+  const { isAuthenticated } = useAuth();
+
   useEffect(() => {
     if (resource?._id) {
       resourceService.incrementViews(resource._id).catch(() => {});
@@ -45,20 +48,42 @@ export default function PDFViewerModal({ resource, onClose }) {
 
         {/* Modal Body */}
         <div className="bg-slate-900 p-8 flex flex-col items-center justify-center text-white text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
-            <BookOpen className="w-7 h-7" />
-          </div>
-          <h3 className="text-lg font-bold">Free Academic Document</h3>
-          <p className="text-xs text-slate-300 max-w-md font-mono">
-            This engineering study resource is 100% free under PadhaiSpace's Academic Open Access policy. Launch the PDF Reader to view immediately.
-          </p>
-          <Link
-            to={`/resources/${resource._id}/read`}
-            onClick={onClose}
-            className="px-6 py-3 bg-[#4F46E5] hover:bg-[#4338CA] dark:bg-[#2563EB] dark:hover:bg-[#1D4ED8] text-white font-mono font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center border border-indigo-300 dark:border-[#38BDF8]/30"
-          >
-            <BookOpen className="w-4 h-4 mr-2" /> Launch PDF Reader
-          </Link>
+          {!isAuthenticated ? (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center">
+                <Lock className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold text-white">Sign In Required to View PDF</h3>
+              <p className="text-xs text-slate-300 max-w-md font-mono leading-relaxed">
+                To open and read this protected engineering document, please sign in to your student account.
+              </p>
+              <Link
+                to="/login"
+                state={{ from: { pathname: `/resources/${resource._id}/read` } }}
+                onClick={onClose}
+                className="px-6 py-3 bg-[#4F46E5] hover:bg-[#4338CA] dark:bg-[#2563EB] dark:hover:bg-[#1D4ED8] text-white font-mono font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center border border-indigo-300 dark:border-[#38BDF8]/30"
+              >
+                <LogIn className="w-4 h-4 mr-2" /> Sign In to Access PDF
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center">
+                <BookOpen className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold">Free Academic Document</h3>
+              <p className="text-xs text-slate-300 max-w-md font-mono">
+                This engineering study resource is 100% free under PadhaiSpace's Academic Open Access policy. Launch the PDF Reader to view immediately.
+              </p>
+              <Link
+                to={`/resources/${resource._id}/read`}
+                onClick={onClose}
+                className="px-6 py-3 bg-[#4F46E5] hover:bg-[#4338CA] dark:bg-[#2563EB] dark:hover:bg-[#1D4ED8] text-white font-mono font-bold text-xs rounded-xl shadow-lg transition-colors flex items-center border border-indigo-300 dark:border-[#38BDF8]/30"
+              >
+                <BookOpen className="w-4 h-4 mr-2" /> Launch PDF Reader
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>

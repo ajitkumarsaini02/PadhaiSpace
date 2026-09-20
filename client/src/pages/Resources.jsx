@@ -14,6 +14,7 @@ export default function Resources() {
   const [resources, setResources] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [units, setUnits] = useState([]);
+  const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activePDF, setActivePDF] = useState(null);
@@ -62,6 +63,27 @@ export default function Resources() {
     };
     fetchSubjects();
   }, []);
+
+  // Fetch sources list dynamically based on selected criteria
+  useEffect(() => {
+    const fetchSources = async () => {
+      try {
+        const params = {};
+        if (filters.type && filters.type !== 'all') params.type = filters.type;
+        if (filters.subjectId && filters.subjectId !== 'all') params.subjectId = filters.subjectId;
+        if (filters.unitId && filters.unitId !== 'all') params.unitId = filters.unitId;
+        if (filters.academicYear && filters.academicYear !== 'all') params.academicYear = filters.academicYear;
+        if (filters.paperYear && filters.paperYear !== 'all') params.paperYear = filters.paperYear;
+        if (filters.q && filters.q.trim()) params.q = filters.q.trim();
+
+        const srcRes = await resourceService.getSources(params);
+        if (srcRes.success) setSources(srcRes.data);
+      } catch (err) {
+        console.warn('Fetch sources error:', err.message);
+      }
+    };
+    fetchSources();
+  }, [filters.type, filters.subjectId, filters.unitId, filters.academicYear, filters.paperYear, filters.q]);
 
   // Fetch Units when Subject changes
   useEffect(() => {
@@ -165,7 +187,9 @@ export default function Resources() {
         onReset={handleReset}
         subjects={subjects}
         units={units}
+        sources={sources}
         showTypeFilter={true}
+        showSourceFilter={true}
       />
 
       {error ? (

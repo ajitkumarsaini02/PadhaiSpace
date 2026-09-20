@@ -58,17 +58,28 @@ export default function Notes() {
     }
   }, [filters.subjectId]);
 
-  // Fetch sources list with real counts from MongoDB
-  const fetchMetadata = async () => {
+  // Fetch sources list with dynamic counts based on active filters
+  const fetchSources = async () => {
     try {
-      const [srcRes, subjRes] = await Promise.all([
-        resourceService.getSources({ type: 'notes' }),
-        subjectService.getAll(),
-      ]);
+      const params = { type: 'notes' };
+      if (filters.subjectId) params.subjectId = filters.subjectId;
+      if (filters.unitId) params.unitId = filters.unitId;
+      if (filters.academicYear) params.academicYear = filters.academicYear;
+      if (filters.q) params.q = filters.q;
+
+      const srcRes = await resourceService.getSources(params);
       if (srcRes.success) setSources(srcRes.data);
+    } catch (err) {
+      console.warn('Sources fetch warning:', err.message);
+    }
+  };
+
+  const fetchSubjects = async () => {
+    try {
+      const subjRes = await subjectService.getAll();
       if (subjRes.success) setSubjects(subjRes.data);
     } catch (err) {
-      console.warn('Metadata fetch warning:', err.message);
+      console.warn('Subjects fetch warning:', err.message);
     }
   };
 
@@ -107,8 +118,12 @@ export default function Notes() {
   };
 
   useEffect(() => {
-    fetchMetadata();
+    fetchSubjects();
   }, []);
+
+  useEffect(() => {
+    fetchSources();
+  }, [filters.subjectId, filters.unitId, filters.academicYear, filters.q]);
 
   useEffect(() => {
     fetchNotes();
@@ -231,8 +246,10 @@ export default function Notes() {
           onReset={handleReset}
           subjects={subjects}
           units={units}
+          sources={sources}
           showTypeFilter={false}
           showUnitFilter={true}
+          showSourceFilter={true}
         />
       </div>
 

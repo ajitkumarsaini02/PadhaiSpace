@@ -28,16 +28,96 @@ const deleteFileFromDisk = (fileUrl) => {
 // @route GET /api/resources/meta/sources
 exports.getSources = async (req, res) => {
   try {
-    const { type } = req.query;
-    const baseFilter = {};
+    const { type, subjectId, unitId, academicYear, paperYear, q } = req.query;
+    const andConditions = [];
+
+    // 1. TYPE FILTERING
     if (type) {
       const lowerType = type.toLowerCase();
       if (lowerType === 'notes' || lowerType === 'pdf' || lowerType === 'unit-pdf') {
-        baseFilter.type = { $in: ['notes', 'pdf', 'unit-pdf', 'Unit PDF'] };
+        andConditions.push({ type: { $in: ['notes', 'pdf', 'unit-pdf', 'Unit PDF'] } });
       } else {
-        baseFilter.type = type;
+        andConditions.push({ type: type });
       }
     }
+
+    // 2. SUBJECT FILTERING
+    if (subjectId && subjectId !== 'all' && mongoose.Types.ObjectId.isValid(subjectId)) {
+      andConditions.push({ subjectId: subjectId });
+    }
+
+    // 3. UNIT FILTERING
+    if (unitId && unitId !== 'all') {
+      if (mongoose.Types.ObjectId.isValid(unitId)) {
+        andConditions.push({ unitId: unitId });
+      } else {
+        const unitNum = parseInt(unitId.toString().replace(/\D/g, ''), 10);
+        if (!isNaN(unitNum)) {
+          const matchingUnits = await Unit.find({ unitNumber: unitNum }).distinct('_id');
+          const unitPattern = `unit[\\s_\\-]*0?${unitNum}|\\bu0?${unitNum}\\b`;
+          const unitRegex = new RegExp(unitPattern, 'i');
+          andConditions.push({
+            $or: [
+              { unitId: { $in: matchingUnits } },
+              { title: unitRegex },
+              { tags: unitRegex },
+              { description: unitRegex },
+            ],
+          });
+        }
+      }
+    }
+
+    // 4. ACADEMIC YEAR FILTERING
+    if (academicYear && academicYear !== 'all') {
+      andConditions.push({ academicYear: academicYear });
+    }
+
+    // 5. PAPER YEAR FILTERING
+    if (paperYear && paperYear !== 'all' && !isNaN(Number(paperYear))) {
+      andConditions.push({ paperYear: Number(paperYear) });
+    }
+
+    // 6. SEARCH QUERY (q)
+    if (q && q.trim()) {
+      const cleanQ = q.trim();
+      const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const terms = cleanQ.split(/\s+/).filter(Boolean);
+
+      if (terms.length > 0) {
+        const termConditions = await Promise.all(
+          terms.map(async (term) => {
+            const termEscaped = escapeRegExp(term);
+            const termRegex = new RegExp(termEscaped, 'i');
+
+            const [matchingSubjs, matchingUnits] = await Promise.all([
+              Subject.find({
+                $or: [{ name: termRegex }, { code: termRegex }],
+              }).distinct('_id'),
+              Unit.find({
+                $or: [{ title: termRegex }],
+              }).distinct('_id'),
+            ]);
+
+            return {
+              $or: [
+                { title: termRegex },
+                { description: termRegex },
+                { tags: termRegex },
+                { source: termRegex },
+                { academicYear: termRegex },
+                { subjectId: { $in: matchingSubjs } },
+                { unitId: { $in: matchingUnits } },
+              ],
+            };
+          })
+        );
+
+        andConditions.push({ $and: termConditions });
+      }
+    }
+
+    const baseFilter = andConditions.length > 0 ? { $and: andConditions } : {};
 
     const gatewayCount = await Resource.countDocuments({
       ...baseFilter,

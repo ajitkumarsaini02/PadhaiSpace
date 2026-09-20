@@ -67,8 +67,22 @@ export default function App() {
           <Route path="/syllabus" element={<Syllabus />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/resources/:id" element={<ResourceDetail />} />
-          <Route path="/resources/:id/view" element={<PDFReader />} />
-          <Route path="/resources/:id/read" element={<PDFReader />} />
+          <Route
+            path="/resources/:id/view"
+            element={
+              <ProtectedRoute>
+                <PDFReader />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resources/:id/read"
+            element={
+              <ProtectedRoute>
+                <PDFReader />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/search" element={<SearchResults />} />
 
           {/* Student Protected Routes */}

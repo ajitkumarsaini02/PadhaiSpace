@@ -7,9 +7,11 @@ export default function FilterBar({
   onReset,
   subjects = [],
   units = [],
+  sources = [],
   showTypeFilter = true,
   showUnitFilter = false,
   showSubjectTypeFilter = false,
+  showSourceFilter = true,
 }) {
   // Dynamically filter subjects by selected Academic Year
   const filteredSubjects = React.useMemo(() => {
@@ -64,7 +66,54 @@ export default function FilterBar({
 
         {/* Dropdown Selects */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          {/* Subject Filter */}
+          {/* 1. Source Filter */}
+          {showSourceFilter && (filters.source !== undefined || showSourceFilter) && (
+            <select
+              value={filters.source || ''}
+              onChange={(e) => onChange('source', e.target.value)}
+              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC] max-w-[180px] truncate"
+            >
+              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+                All Sources
+              </option>
+              {sources && sources.length > 0 ? (
+                sources.map((s) => {
+                  const val = typeof s === 'string' ? s : (s.id || s.name);
+                  const label = typeof s === 'string' ? s : (s.name || s.id);
+                  const count = typeof s === 'object' && s.count !== undefined ? ` (${s.count})` : '';
+                  return (
+                    <option key={val} value={val} className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+                      {label}{count}
+                    </option>
+                  );
+                })
+              ) : (
+                <>
+                  <option value="gateway-classes" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Gateway Classes</option>
+                  <option value="edushine-classes" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">EduShine Classes</option>
+                  <option value="multi-atom" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Multi Atom</option>
+                  <option value="other-notes" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Other Notes</option>
+                </>
+              )}
+            </select>
+          )}
+
+          {/* 2. Academic Year Filter */}
+          {filters.academicYear !== undefined && (
+            <select
+              value={filters.academicYear || ''}
+              onChange={handleYearChange}
+              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC]"
+            >
+              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Years</option>
+              <option value="1st Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">1st Year</option>
+              <option value="2nd Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">2nd Year</option>
+              <option value="3rd Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">3rd Year</option>
+              <option value="4th Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">4th Year</option>
+            </select>
+          )}
+
+          {/* 3. Subject Filter */}
           <select
             value={filters.subjectId || ''}
             onChange={(e) => onChange('subjectId', e.target.value)}
@@ -85,7 +134,7 @@ export default function FilterBar({
             ))}
           </select>
 
-          {/* Unit Filter */}
+          {/* 4. Unit Filter */}
           {(showUnitFilter || filters.unitId !== undefined || units.length > 0) && (
             <select
               value={filters.unitId || ''}
@@ -113,36 +162,7 @@ export default function FilterBar({
             </select>
           )}
 
-          {/* Resource Type Filter */}
-          {showTypeFilter && (
-            <select
-              value={filters.type || ''}
-              onChange={(e) => onChange('type', e.target.value)}
-              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC]"
-            >
-              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Resource Types</option>
-              <option value="notes" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Study Notes</option>
-              <option value="pyq" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">PYQs (Past Papers)</option>
-              <option value="syllabus" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Syllabus</option>
-            </select>
-          )}
-
-          {/* Academic Year Filter */}
-          {filters.academicYear !== undefined && (
-            <select
-              value={filters.academicYear || ''}
-              onChange={handleYearChange}
-              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC]"
-            >
-              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Years</option>
-              <option value="1st Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">1st Year</option>
-              <option value="2nd Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">2nd Year</option>
-              <option value="3rd Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">3rd Year</option>
-              <option value="4th Year" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">4th Year</option>
-            </select>
-          )}
-
-          {/* Paper Year Filter */}
+          {/* 5. Paper Year Filter */}
           {filters.paperYear !== undefined && (
             <select
               value={filters.paperYear || ''}
@@ -155,6 +175,20 @@ export default function FilterBar({
               <option value="2024" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">2024</option>
               <option value="2023" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">2023</option>
               <option value="2022" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">2022</option>
+            </select>
+          )}
+
+          {/* 6. Resource Type Filter */}
+          {showTypeFilter && (
+            <select
+              value={filters.type || ''}
+              onChange={(e) => onChange('type', e.target.value)}
+              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC]"
+            >
+              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">All Resource Types</option>
+              <option value="notes" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Study Notes</option>
+              <option value="pyq" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">PYQs (Past Papers)</option>
+              <option value="syllabus" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Syllabus</option>
             </select>
           )}
 
