@@ -6,13 +6,14 @@ import EmptyState from '../components/EmptyState';
 import PDFViewerModal from '../components/PDFViewerModal';
 import Pagination from '../components/Pagination';
 import { CardSkeleton } from '../components/SkeletonLoader';
-import { resourceService, subjectService } from '../services/api';
+import { resourceService, subjectService, unitService } from '../services/api';
 import { BookOpen, Layers, ArrowRight, RefreshCw, AlertTriangle } from 'lucide-react';
 
 export default function Notes() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [notes, setNotes] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [units, setUnits] = useState([]);
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,6 +27,7 @@ export default function Notes() {
 
   const [filters, setFilters] = useState({
     subjectId: searchParams.get('subjectId') || '',
+    unitId: searchParams.get('unitId') || '',
     type: 'notes',
     academicYear: searchParams.get('academicYear') || '',
     source: searchParams.get('source') || '',
@@ -37,12 +39,24 @@ export default function Notes() {
     const params = new URLSearchParams();
     if (newPage > 1) params.set('page', String(newPage));
     if (newFilters.subjectId) params.set('subjectId', newFilters.subjectId);
+    if (newFilters.unitId) params.set('unitId', newFilters.unitId);
     if (newFilters.academicYear) params.set('academicYear', newFilters.academicYear);
     if (newFilters.source) params.set('source', newFilters.source);
     if (newFilters.q) params.set('q', newFilters.q);
 
     setSearchParams(params, { replace: true });
   };
+
+  // Fetch Units when Subject changes
+  useEffect(() => {
+    if (filters.subjectId && filters.subjectId !== 'all') {
+      unitService.getAll(filters.subjectId).then((res) => {
+        if (res.success) setUnits(res.data || []);
+      }).catch(() => setUnits([]));
+    } else {
+      setUnits([]);
+    }
+  }, [filters.subjectId]);
 
   // Fetch sources list with real counts from MongoDB
   const fetchMetadata = async () => {
@@ -70,6 +84,7 @@ export default function Notes() {
       };
 
       if (filters.subjectId) params.subjectId = filters.subjectId;
+      if (filters.unitId) params.unitId = filters.unitId;
       if (filters.academicYear) params.academicYear = filters.academicYear;
       if (filters.source) params.source = filters.source;
       if (filters.q) params.q = filters.q;
@@ -101,7 +116,11 @@ export default function Notes() {
 
   const handleFilterChange = (key, value) => {
     const newPage = 1;
-    const newFilters = { ...filters, [key]: value };
+    const newFilters = {
+      ...filters,
+      [key]: value,
+      ...(key === 'subjectId' ? { unitId: '' } : {}),
+    };
     setPage(newPage);
     setFilters(newFilters);
     updateUrlParams(newFilters, newPage);
@@ -114,7 +133,7 @@ export default function Notes() {
   };
 
   const handleReset = () => {
-    const defaultFilters = { subjectId: '', type: 'notes', academicYear: '', source: '', q: '', sort: 'newest' };
+    const defaultFilters = { subjectId: '', unitId: '', type: 'notes', academicYear: '', source: '', q: '', sort: 'newest' };
     setPage(1);
     setFilters(defaultFilters);
     updateUrlParams(defaultFilters, 1);
@@ -193,7 +212,9 @@ export default function Notes() {
           onChange={handleFilterChange}
           onReset={handleReset}
           subjects={subjects}
-          showTypeFilter={true}
+          units={units}
+          showTypeFilter={false}
+          showUnitFilter={true}
         />
       </div>
 

@@ -206,8 +206,25 @@ exports.getResources = async (req, res) => {
     }
 
     // 3. UNIT FILTERING
-    if (unitId && unitId !== 'all' && mongoose.Types.ObjectId.isValid(unitId)) {
-      andConditions.push({ unitId: unitId });
+    if (unitId && unitId !== 'all') {
+      if (mongoose.Types.ObjectId.isValid(unitId)) {
+        andConditions.push({ unitId: unitId });
+      } else {
+        const unitNum = parseInt(unitId.toString().replace(/\D/g, ''), 10);
+        if (!isNaN(unitNum)) {
+          const matchingUnits = await Unit.find({ unitNumber: unitNum }).distinct('_id');
+          const unitPattern = `unit[\\s_\\-]*0?${unitNum}|\\bu0?${unitNum}\\b`;
+          const unitRegex = new RegExp(unitPattern, 'i');
+          andConditions.push({
+            $or: [
+              { unitId: { $in: matchingUnits } },
+              { title: unitRegex },
+              { tags: unitRegex },
+              { description: unitRegex },
+            ],
+          });
+        }
+      }
     }
 
     // 4. ACADEMIC YEAR FILTERING

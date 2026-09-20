@@ -6,7 +6,9 @@ export default function FilterBar({
   onChange,
   onReset,
   subjects = [],
+  units = [],
   showTypeFilter = true,
+  showUnitFilter = false,
   showSubjectTypeFilter = false,
 }) {
   // Dynamically filter subjects by selected Academic Year
@@ -62,6 +64,34 @@ export default function FilterBar({
                   {s.name}
                 </option>
               ))}
+            </select>
+          )}
+
+          {/* Unit Filter */}
+          {(showUnitFilter || filters.unitId !== undefined || units.length > 0) && (
+            <select
+              value={filters.unitId || ''}
+              onChange={(e) => onChange('unitId', e.target.value)}
+              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC] max-w-[180px] truncate"
+            >
+              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+                All Units
+              </option>
+              {units.length > 0 ? (
+                units.map((u) => (
+                  <option key={u._id} value={u._id} className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+                    Unit {u.unitNumber}: {u.title}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="1" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Unit 1</option>
+                  <option value="2" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Unit 2</option>
+                  <option value="3" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Unit 3</option>
+                  <option value="4" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Unit 4</option>
+                  <option value="5" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">Unit 5</option>
+                </>
+              )}
             </select>
           )}
 
