@@ -100,10 +100,16 @@ export default function Syllabus() {
 
   const handleFilterChange = (key, value) => {
     const newPage = 1;
-    const newFilters = { ...filters, [key]: value };
-    setPage(newPage);
-    setFilters(newFilters);
-    updateUrlParams(selectedAcademicYear, newFilters, newPage);
+    if (key === 'academicYear') {
+      setSelectedAcademicYear(value);
+      setPage(newPage);
+      updateUrlParams(value, filters, newPage);
+    } else {
+      const newFilters = { ...filters, [key]: value };
+      setPage(newPage);
+      setFilters(newFilters);
+      updateUrlParams(selectedAcademicYear, newFilters, newPage);
+    }
   };
 
   const handlePageChange = (newPage) => {
