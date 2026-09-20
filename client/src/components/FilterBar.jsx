@@ -32,6 +32,21 @@ export default function FilterBar({
     }
   };
 
+  const [localSearch, setLocalSearch] = React.useState(filters.q || '');
+
+  React.useEffect(() => {
+    setLocalSearch(filters.q || '');
+  }, [filters.q]);
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      if ((filters.q || '') !== localSearch) {
+        onChange('q', localSearch);
+      }
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [localSearch]);
+
   return (
     <div className="tech-card p-4 mb-6">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3">
@@ -40,8 +55,8 @@ export default function FilterBar({
           <Search className="w-4 h-4 text-slate-400 dark:text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            value={filters.q || ''}
-            onChange={(e) => onChange('q', e.target.value)}
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
             placeholder="Search subjects, resources..."
             className="w-full pl-9 pr-3 py-2 text-xs md:text-sm bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none focus:border-[#4F46E5] dark:focus:border-[#38BDF8] text-slate-900 dark:text-[#F8FAFC] font-mono"
           />
@@ -50,22 +65,25 @@ export default function FilterBar({
         {/* Dropdown Selects */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           {/* Subject Filter */}
-          {subjects.length > 0 && (
-            <select
-              value={filters.subjectId || ''}
-              onChange={(e) => onChange('subjectId', e.target.value)}
-              className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC] max-w-[200px] truncate"
-            >
-              <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
-                {filters?.academicYear && filters.academicYear !== 'all' ? `All ${filters.academicYear} Subjects` : 'All Subjects'}
+          <select
+            value={filters.subjectId || ''}
+            onChange={(e) => onChange('subjectId', e.target.value)}
+            disabled={subjects.length === 0}
+            className="px-3 py-2 text-xs font-mono font-bold bg-slate-50 dark:bg-[#070A12] border border-slate-200 dark:border-[#1E293B] rounded-xl focus:outline-none text-slate-900 dark:text-[#F8FAFC] max-w-[200px] truncate disabled:opacity-60"
+          >
+            <option value="" className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+              {subjects.length === 0
+                ? 'All Subjects'
+                : filters?.academicYear && filters.academicYear !== 'all'
+                ? `All ${filters.academicYear} Subjects`
+                : 'All Subjects'}
+            </option>
+            {filteredSubjects.map((s) => (
+              <option key={s._id} value={s._id} className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
+                {s.name}
               </option>
-              {filteredSubjects.map((s) => (
-                <option key={s._id} value={s._id} className="bg-white dark:bg-[#0B0F19] text-slate-900 dark:text-[#F8FAFC]">
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          )}
+            ))}
+          </select>
 
           {/* Unit Filter */}
           {(showUnitFilter || filters.unitId !== undefined || units.length > 0) && (

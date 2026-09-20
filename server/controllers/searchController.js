@@ -24,22 +24,35 @@ exports.globalSearch = async (req, res) => {
     }
 
     const cleanQ = q.trim();
-    const regex = new RegExp(escapeRegex(cleanQ), 'i');
+    const terms = cleanQ.split(/\s+/).filter(Boolean);
+    const termRegexes = terms.map((t) => new RegExp(escapeRegex(t), 'i'));
+
+    const subjectFilter = {
+      $and: termRegexes.map((tReg) => ({
+        $or: [{ name: tReg }, { code: tReg }, { description: tReg }],
+      })),
+    };
+
+    const unitFilter = {
+      $and: termRegexes.map((tReg) => ({
+        $or: [{ title: tReg }, { description: tReg }],
+      })),
+    };
+
+    const resourceFilter = {
+      $and: termRegexes.map((tReg) => ({
+        $or: [{ title: tReg }, { description: tReg }, { tags: tReg }, { source: tReg }, { academicYear: tReg }],
+      })),
+    };
 
     const [subjects, units, allResources] = await Promise.all([
-      Subject.find({
-        $or: [{ name: regex }, { code: regex }, { description: regex }],
-      }).limit(15),
+      Subject.find(subjectFilter).limit(15),
 
-      Unit.find({
-        $or: [{ title: regex }, { description: regex }],
-      })
+      Unit.find(unitFilter)
         .populate('subjectId', 'name code')
         .limit(15),
 
-      Resource.find({
-        $or: [{ title: regex }, { description: regex }, { tags: regex }, { source: regex }],
-      })
+      Resource.find(resourceFilter)
         .populate('subjectId', 'name code')
         .populate('unitId', 'unitNumber title')
         .limit(40),

@@ -36,6 +36,7 @@ import AdminSearch from './pages/admin/AdminSearch';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import ScrollToTopButton from './components/ScrollToTopButton';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -185,6 +186,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      <ScrollToTopButton />
       {!isReaderRoute && <Footer />}
     </div>
   );

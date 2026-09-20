@@ -40,12 +40,22 @@ export default function Navbar() {
     return false;
   };
 
+  const handleLogoClick = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNavClick = (path) => {
+    if (path === '/' && location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-md border-b border-slate-200 dark:border-[#1E293B] transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center space-x-2.5 group">
+          <Link to="/" onClick={handleLogoClick} className="flex items-center space-x-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#2563EB] dark:from-[#6366F1] dark:to-[#3B82F6] flex items-center justify-center text-white font-bold shadow-md group-hover:scale-105 transition-transform border border-indigo-200 dark:border-indigo-500/30">
               <GraduationCap className="w-5 h-5 text-white" />
             </div>
@@ -65,6 +75,7 @@ export default function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
+                onClick={() => handleNavClick(link.path)}
                 className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold tracking-wide transition-colors ${
                   isActive(link.path)
                     ? 'bg-slate-100 dark:bg-[#111827] text-[#4F46E5] dark:text-[#818CF8] border border-slate-200 dark:border-[#1E293B]'
@@ -218,7 +229,10 @@ export default function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                onClick={() => setMobileMenuOpen(false)}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleNavClick(link.path);
+                }}
                 className={`px-3 py-2 rounded-md text-sm font-mono font-bold ${
                   isActive(link.path)
                     ? 'bg-indigo-50 dark:bg-[#111827] text-[#4F46E5] dark:text-[#818CF8]'

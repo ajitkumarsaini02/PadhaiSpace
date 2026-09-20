@@ -267,22 +267,41 @@ exports.getResources = async (req, res) => {
 
     // 8. SEARCH FILTERING (q)
     if (q && q.trim()) {
-      const qRegex = { $regex: q.trim(), $options: 'i' };
+      const cleanQ = q.trim();
+      const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const terms = cleanQ.split(/\s+/).filter(Boolean);
 
-      const matchingSubjects = await Subject.find({
-        $or: [{ name: qRegex }, { code: qRegex }],
-      });
-      const matchingSubjIds = matchingSubjects.map((s) => s._id);
+      if (terms.length > 0) {
+        const termConditions = await Promise.all(
+          terms.map(async (term) => {
+            const termEscaped = escapeRegExp(term);
+            const termRegex = new RegExp(termEscaped, 'i');
 
-      andConditions.push({
-        $or: [
-          { title: qRegex },
-          { description: qRegex },
-          { tags: qRegex },
-          { source: qRegex },
-          { subjectId: { $in: matchingSubjIds } },
-        ],
-      });
+            const [matchingSubjs, matchingUnits] = await Promise.all([
+              Subject.find({
+                $or: [{ name: termRegex }, { code: termRegex }],
+              }).distinct('_id'),
+              Unit.find({
+                $or: [{ title: termRegex }],
+              }).distinct('_id'),
+            ]);
+
+            return {
+              $or: [
+                { title: termRegex },
+                { description: termRegex },
+                { tags: termRegex },
+                { source: termRegex },
+                { academicYear: termRegex },
+                { subjectId: { $in: matchingSubjs } },
+                { unitId: { $in: matchingUnits } },
+              ],
+            };
+          })
+        );
+
+        andConditions.push({ $and: termConditions });
+      }
     }
 
     const finalFilter = andConditions.length > 0 ? { $and: andConditions } : {};

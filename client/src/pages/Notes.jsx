@@ -167,35 +167,53 @@ export default function Notes() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {sources.map((src) => (
-            <Link
-              key={src.id}
-              to={`/notes/source/${src.id}`}
-              className="group tech-card p-5 hover:border-[#4F46E5] dark:hover:border-[#38BDF8] transition-all flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-[#38BDF8] border border-indigo-200 dark:border-indigo-800">
-                    Source
-                  </span>
-                  <span className="text-xs font-mono font-bold text-slate-500 dark:text-[#94A3B8]">
-                    {src.count} {src.count === 1 ? 'Resource' : 'Resources'}
-                  </span>
+          {sources.length === 0 ? (
+            [1, 2, 3, 4].map((i) => (
+              <div key={i} className="tech-card p-5 animate-pulse space-y-3 min-h-[140px] flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="h-4 bg-slate-200 dark:bg-[#1E293B] rounded w-16"></div>
+                    <div className="h-4 bg-slate-200 dark:bg-[#1E293B] rounded w-20"></div>
+                  </div>
+                  <div className="h-5 bg-slate-200 dark:bg-[#1E293B] rounded w-3/4 mb-2 font-bold"></div>
+                  <div className="h-3 bg-slate-200 dark:bg-[#1E293B] rounded w-full"></div>
                 </div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-[#F8FAFC] group-hover:text-[#4F46E5] dark:group-hover:text-[#38BDF8] transition-colors">
-                  {src.name}
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-[#94A3B8] mt-1 line-clamp-2">
-                  Complete unit notes & PDF materials provided by {src.name}
-                </p>
+                <div className="pt-3 border-t border-slate-100 dark:border-[#1E293B] flex justify-between items-center">
+                  <div className="h-3 bg-slate-200 dark:bg-[#1E293B] rounded w-28"></div>
+                </div>
               </div>
+            ))
+          ) : (
+            sources.map((src) => (
+              <Link
+                key={src.id}
+                to={`/notes/source/${src.id}`}
+                className="group tech-card p-5 hover:border-[#4F46E5] dark:hover:border-[#38BDF8] transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-[#4F46E5] dark:text-[#38BDF8] border border-indigo-200 dark:border-indigo-800">
+                      Source
+                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-[#94A3B8]">
+                      {src.count} {src.count === 1 ? 'Resource' : 'Resources'}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-[#F8FAFC] group-hover:text-[#4F46E5] dark:group-hover:text-[#38BDF8] transition-colors">
+                    {src.name}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-[#94A3B8] mt-1 line-clamp-2">
+                    Complete unit notes & PDF materials provided by {src.name}
+                  </p>
+                </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#1E293B] flex items-center justify-between text-xs font-mono font-bold text-[#4F46E5] dark:text-[#38BDF8]">
-                <span>Explore Academic Years</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          ))}
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-[#1E293B] flex items-center justify-between text-xs font-mono font-bold text-[#4F46E5] dark:text-[#38BDF8]">
+                  <span>Explore Academic Years</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </div>
 

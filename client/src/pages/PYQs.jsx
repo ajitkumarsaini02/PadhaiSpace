@@ -142,10 +142,23 @@ export default function PYQs() {
 
   const handleFilterChange = (key, value) => {
     const newPage = 1;
-    const newFilters = { ...filters, [key]: value };
+    let newAcadYr = selectedAcademicYear;
+    let newPaperYr = selectedPaperYear;
+    let newFilters = { ...filters };
+
+    if (key === 'academicYear') {
+      newAcadYr = value;
+      setSelectedAcademicYear(value);
+    } else if (key === 'paperYear') {
+      newPaperYr = value;
+      setSelectedPaperYear(value);
+    } else {
+      newFilters[key] = value;
+      setFilters(newFilters);
+    }
+
     setPage(newPage);
-    setFilters(newFilters);
-    updateUrlParams(selectedAcademicYear, selectedPaperYear, newFilters, newPage);
+    updateUrlParams(newAcadYr, newPaperYr, newFilters, newPage);
   };
 
   const handlePageChange = (newPage) => {
