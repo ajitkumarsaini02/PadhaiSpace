@@ -188,21 +188,21 @@ exports.getAuditLogs = async (req, res) => {
   }
 };
 
-// @route POST /api/admin/sync-supabase
-exports.syncSupabaseStorage = async (req, res) => {
+// @route POST /api/admin/sync-disk
+exports.syncDiskStorage = async (req, res) => {
   try {
-    const { syncSupabaseToDb } = require('../syncSupabaseNotesToDb');
-    const result = await syncSupabaseToDb({ silent: false });
+    const { syncNotes } = require('../syncNotesToDb');
+    const result = await syncNotes({ silent: false });
     if (req.user && req.user.role === 'admin') {
-      logAdminAction(req.user._id, 'SUPABASE_SYNC', 'Resource', null, result, req);
+      logAdminAction(req.user._id, 'DISK_SYNC', 'Resource', null, result, req);
     }
     res.json({
       success: true,
-      message: `Supabase Storage sync complete. ${result.insertedCount} inserted, ${result.updatedCount} updated. Total DB resources: ${result.totalCount}`,
+      message: `Disk storage sync complete. ${result.insertedCount} inserted, ${result.updatedCount} updated. Total DB resources: ${result.totalCount}`,
       data: result,
     });
   } catch (error) {
-    console.error('Error syncing Supabase storage:', error);
+    console.error('Error syncing disk storage:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

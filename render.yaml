@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: padhaispace-backend
+  - name: padhaispace-backend
     env: node
     rootDir: server
     buildCommand: npm install
@@ -16,9 +16,3 @@ services:
         generateValue: true
       - key: CLIENT_URL
         sync: false
-      - key: SUPABASE_URL
-        value: https://uhcysgjacnbdzswevnwn.supabase.co
-      - key: SUPABASE_SECRET_KEY
-        sync: false
-      - key: SUPABASE_BUCKET
-        value: pdf-notes

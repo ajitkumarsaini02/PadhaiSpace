@@ -5,7 +5,6 @@ const { logAdminAction } = require('../utils/auditLogger');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-const { supabase } = require('../config/supabase');
 
 // Helper to remove file from disk safely
 const deleteFileFromDisk = (fileUrl) => {
@@ -820,6 +819,31 @@ exports.viewProtectedPDF = async (req, res) => {
           break;
         }
       }
+
+      // Deep search fallback: locate file by filename anywhere inside protected_uploads
+      if (!pdfPath && safeFilename) {
+        const findFileRecursively = (dir, targetName) => {
+          try {
+            const list = fs.readdirSync(dir);
+            for (const item of list) {
+              const full = path.join(dir, item);
+              const stat = fs.statSync(full);
+              if (stat.isDirectory()) {
+                const found = findFileRecursively(full, targetName);
+                if (found) return found;
+              } else if (item.toLowerCase() === targetName.toLowerCase() && isValidPDFFile(full)) {
+                return full;
+              }
+            }
+          } catch (_) {}
+          return null;
+        };
+
+        const recursiveFound = findFileRecursively(resolvedProtectedDir, safeFilename);
+        if (recursiveFound && isSubpath(resolvedProtectedDir, recursiveFound)) {
+          pdfPath = recursiveFound;
+        }
+      }
     }
 
     const remoteUrl = (resource.fileUrl && resource.fileUrl.startsWith('http'))
@@ -834,36 +858,7 @@ exports.viewProtectedPDF = async (req, res) => {
       }
     }
 
-    if (!pdfPath && !pdfBuffer && supabase) {
-      try {
-        const bucketName = process.env.SUPABASE_BUCKET || 'pdf-notes';
-        let rawPath = (resource.fileUrl || '').replace(/^[\/\\]+(uploads|protected_uploads)[\/\\]+/i, '').replace(/^[\/\\]+/, '');
-        rawPath = rawPath.replace(/\\/g, '/');
 
-        const candidateStoragePaths = [
-          rawPath,
-          rawPath.startsWith('Notes/') ? rawPath : `Notes/${rawPath}`,
-          rawPath.startsWith('Notes/') ? rawPath.substring(6) : rawPath,
-          path.basename(rawPath)
-        ];
-
-        const uniqueCandidatePaths = [...new Set(candidateStoragePaths)].filter(Boolean);
-
-        for (const storagePath of uniqueCandidatePaths) {
-          const { data, error } = await supabase.storage.from(bucketName).download(storagePath);
-          if (!error && data) {
-            const arrayBuf = await data.arrayBuffer();
-            pdfBuffer = Buffer.from(arrayBuf);
-            console.log(`[Supabase Stream Success] Retrieved ${pdfBuffer.length} bytes for resource ${resource._id} via path '${storagePath}'`);
-            break;
-          } else if (error) {
-            console.warn(`[Supabase Storage Stream Warn] Resource ${resource._id} path '${storagePath}':`, error.message);
-          }
-        }
-      } catch (supabaseErr) {
-        console.warn(`[Supabase Stream Error] ${resource._id}:`, supabaseErr.message);
-      }
-    }
 
     if (pdfPath && !pdfBuffer) {
       const stat = fs.statSync(pdfPath);

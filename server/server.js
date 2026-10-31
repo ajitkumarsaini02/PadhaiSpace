@@ -163,28 +163,21 @@ const startServer = async () => {
     console.warn('[Auto-Seed Check Warn]', seedCheckErr.message);
   }
 
-  // Auto-sync Supabase storage on startup & schedule periodic background sync (every 5 mins)
+  // Auto-sync local disk notes if protected_uploads/Notes exists
   try {
-    const { syncSupabaseToDb } = require('./syncSupabaseNotesToDb');
-    console.log('[Supabase Auto-Sync] Running initial storage sync...');
-    syncSupabaseToDb({ silent: true }).catch((err) =>
-      console.warn('[Supabase Auto-Sync Startup Warning]', err.message)
+    const { syncNotes } = require('./syncNotesToDb');
+    console.log('[Disk Storage Sync] Checking local study notes in protected_uploads/Notes...');
+    syncNotes({ silent: true }).catch((err) =>
+      console.warn('[Disk Storage Sync Warning]', err.message)
     );
-
-    // Schedule periodic background sync every 5 minutes (300,000 ms)
-    setInterval(() => {
-      syncSupabaseToDb({ silent: true }).catch((err) =>
-        console.warn('[Supabase Auto-Sync Periodic Warning]', err.message)
-      );
-    }, 5 * 60 * 1000);
   } catch (syncSetupErr) {
-    console.warn('[Supabase Auto-Sync Setup Warning]', syncSetupErr.message);
+    console.warn('[Disk Storage Sync Setup Warning]', syncSetupErr.message);
   }
 
   const server = app.listen(PORT, () => {
     console.log(`====================================================`);
     console.log(`  🚀 PadhaiSpace Server running on port ${PORT}`);
-    console.log(`  🔄 Supabase Storage Auto-Sync Active (Background 5-Min Periodic)`);
+    console.log(`  📁 Protected Disk Storage Active (protected_uploads)`);
     console.log(`  🔒 Production-Grade Security Active`);
     console.log(`====================================================`);
   });

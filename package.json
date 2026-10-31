@@ -10,7 +10,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "build": "cd client && npm run build",
     "seed": "cd server && npm run seed",
-    "sync:supabase": "cd server && npm run sync:supabase"
+    "sync:notes": "cd server && npm run sync:notes"
   },
   "keywords": [
     "engineering",
