@@ -678,7 +678,12 @@ const fetchRemotePDFBuffer = async (url) => {
   if (targetUrl.includes('drive.google.com') && targetUrl.includes('/file/d/')) {
     const fileIdMatch = targetUrl.match(/\/file\/d\/([^\/]+)/);
     if (fileIdMatch && fileIdMatch[1]) {
-      targetUrl = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+      targetUrl = `https://drive.usercontent.google.com/download?id=${fileIdMatch[1]}&export=download`;
+    }
+  } else if (targetUrl.includes('drive.google.com/uc?export=download&id=')) {
+    const id = targetUrl.split('id=')[1]?.split('&')[0];
+    if (id) {
+      targetUrl = `https://drive.usercontent.google.com/download?id=${id}&export=download`;
     }
   }
 
@@ -855,6 +860,27 @@ exports.viewProtectedPDF = async (req, res) => {
         pdfBuffer = await fetchRemotePDFBuffer(remoteUrl);
       } catch (remoteErr) {
         console.warn(`[PDF Stream] Remote fetch failed for resource ${resource._id}:`, remoteErr.message);
+      }
+    }
+
+    // Google Drive Cloud Stream Fallback (for deployed server like Render)
+    if (!pdfPath && !pdfBuffer) {
+      try {
+        const gdriveMapPath = path.join(__dirname, '../config/gdriveFiles.json');
+        if (fs.existsSync(gdriveMapPath)) {
+          const gdriveMap = JSON.parse(fs.readFileSync(gdriveMapPath, 'utf8'));
+          const cleanRel = (resource.fileUrl || '').replace(/^[\/\\]+(uploads|protected_uploads)[\/\\]+/i, '').replace(/^[\/\\]+/, '').toLowerCase();
+          const safeName = path.basename(resource.fileUrl || '').toLowerCase();
+
+          const fileId = gdriveMap[cleanRel] || gdriveMap[safeName];
+          if (fileId) {
+            const gdriveUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
+            pdfBuffer = await fetchRemotePDFBuffer(gdriveUrl);
+            console.log(`[Google Drive Stream Success] Retrieved ${pdfBuffer.length} bytes for resource ${resource._id}`);
+          }
+        }
+      } catch (gdriveErr) {
+        console.warn(`[Google Drive Stream Error] ${resource._id}:`, gdriveErr.message);
       }
     }
 
